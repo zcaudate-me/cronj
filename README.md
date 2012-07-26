@@ -27,7 +27,9 @@ string parsing for more cron-like usage, ie:
                  :schedule "/5 * * * * * *"})
 
     (cj/add-job {:id "print-date" 
-                 :desc "prints out the date every 5 seconds on the 9th and 10th minute of every hour on every Friday from June to August between the year 2012 to 2020"  
+                 :desc "prints out the date every 5 seconds on the
+                        9th and 10th minute of every hour on every Friday
+                        from June to August between the year 2012 to 2020"  
                  :handler #'println 
                  :schedule "/5  9,10  * 5 * 6-8 2012-2020"})
 
