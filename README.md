@@ -19,7 +19,7 @@ This is a cron-inspired task-scheduling library. I have found many cron-like lib
     (cj/stop!)
 
 ## TODOS
-string parsing for more cron-like usage, ie: 
+####string parsing for more cron-like usage, ie: 
 
     (cj/add-job {:id "print-date" 
                  :desc "prints out the date every 5 seconds"  
@@ -33,7 +33,7 @@ string parsing for more cron-like usage, ie:
                  :handler #'println 
                  :schedule "/5  9,10  * 5 * 6-8 2012-2020"})
 
-commandline usage for single shell programs
+####commandline usage for single shell programs
 
     java -jar cronj.jar --job "echo $(date)" --schedule "/5 * * * * * *"
 
