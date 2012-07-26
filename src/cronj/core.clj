@@ -1,3 +1,35 @@
+;;   Diagram
+;;
+;;                                        job-list
+;;                __...--+----+----+----+----+----+----+----+----+
+;;       _..---'""      _|.--"|    |    |    |    |    |    |    |
+;;      +-------------+'_+----+----+----+----+----+----+----+----+
+;;      | :id         |-     /                                 |
+;;      | :desc       |     /     dpL                       job methods
+;;      | :handler    |    /    ,XPXYb.               +---------------------+
+;;      | :schedule   |   /    dP']X[`XL              | add-(all)-job(s)    |
+;;      | :enabled    |  /    `'  ]X[  "              | remove-(all)-job(s) |
+;;      |             | /         ]X[                 | enable(d?)          |
+;;      |             |/          ]X[                 | disable(d?)         |
+;;      +-------------+           ]X[                 | toggle              |
+;;           job               ....:.....             | enabled-job(-id)s   |
+;;                         ...!''''''''''!..          | disabled-job(-id)s  |
+;;                       ,,'''            '`!.        | $job                |
+;;                      .!'    every second  `!.      +---------------------+
+;;            ................  looks at the   !.
+;;            | status map   |  job-list and   `!.
+;;            |              |  triggers the    `!
+;;            | :thread      |  job handler if  ;!;
+;;            | :last-run    |  the job has     ,!'        cron methods
+;;            |______________|  been scheduled  !'    +---------------------+
+;;                                             ,'     |                     |
+;;                     `!.                   ,,'      |  running?  start!   |
+;;                       `!..              ,,''       |  stopped?  stop!    |
+;;                         `'!....    ....!''         |                     |
+;;                            ''''''''''''            +---------------------+
+;;                           cronj thread
+
+
 (ns cronj.core
   (:require [clj-time.core :as t]
             [clj-time.local :as lt]))
@@ -6,8 +38,9 @@
 (def ^:dynamic *cronj* (atom {:thread nil
                              :last-run nil}))
 
-(def *required-job-keys [:id :desc :handler :schedule])
-(def *optional-job-map {:enabled true})
+(def !required-job-keys [:id :desc :handler :schedule])
+(def !optional-job-map {:enabled true})
+(def !default-check-interval 50) ;;ms
 
 (defn all-jobs []
   (map deref
@@ -25,13 +58,13 @@
 
 (defn is-job? [job]
   (every? true?
-          (map #(contains? job %) *required-job-keys)))
+          (map #(contains? job %) !required-job-keys)))
 
 (defn add-job [job]
   (if (is-job? job)
     (dosync
      (alter *job-list* assoc (:id job)
-            (atom (into *optional-job-map job))))
+            (atom (into !optional-job-map job))))
     (throw (Exception. "The job is not a valid job"))))
 
 (defn remove-job [job-id]
@@ -84,8 +117,7 @@
     (false? (job-exists? job-id))
     (println "Job (" job-id ") does not exist")
 
-    (disabled? job-id)
-    (println "Job (" job-id ") is not enabled")
+    (disabled? job-id) nil ;;(println "Job (" job-id ") is not enabled")
 
     :else
     (do
@@ -95,23 +127,28 @@
         (catch Exception e (.printStackTrace e))))))
 
 (defn -* [] :*)
+
 (defn --
   ([a b]
      (range a (inc b)))
   ([a b s]
      (range a (inc b) s)))
 
-(defn to-time-array [dt]
+(defn -| [period]
+ (fn [v] (zero? (mod v period))))
+
+(defn- to-time-array [dt]
   (map #(% dt)
        [t/sec t/minute t/hour t/day-of-week t/day t/month t/year]))
 
-(defn match-entry? [e s]
+(defn- match-entry? [e s]
   (cond (= s :*) true
         (= e s) true
+        (fn? s) (s e)
         (sequential? s) (some #(match-entry? e %) s)
         :else false))
 
-(defn match-cronj? [t-arr c-arr]
+(defn- match-cronj? [t-arr c-arr]
   (every? true?
           (map match-entry? t-arr c-arr)))
 
@@ -121,13 +158,13 @@
     (if (or (nil? lr) (not= lr nr))
       (do
         (swap! *cronj* assoc :last-run nr)
-        (println nr)
+        ;; (println nr) ;; FOR DEBUGGING
         (doseq [job (all-jobs)]
           (if (match-cronj? nr (:schedule job))
             (future (run-job* (:id job) dtime))))))))
 
 (defn- cronj-loop
-  ([] (cronj-loop 100))
+  ([] (cronj-loop !default-check-interval))
   ([interval]
      (Thread/sleep interval)
      (cronj-fn (t/now))
@@ -147,6 +184,8 @@
            (future-done? x)
            (future-cancelled? x)))))
 
+(def running? (comp not stopped?))
+
 (defn start! [ & args]
   (cond
     (stopped?)
@@ -160,4 +199,3 @@
   (if-not (stopped?)
     (swap! *cronj* update-in [:thread] future-cancel)
     (println "The cronj scheduler is already stopped.")))
-
