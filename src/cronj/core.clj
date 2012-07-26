@@ -1,26 +1,26 @@
 ;;   Diagram
 ;;
-;;                                        job-list
+;;                                        service-list
 ;;                __...--+----+----+----+----+----+----+----+----+
 ;;       _..---'""      _|.--"|    |    |    |    |    |    |    |
 ;;      +-------------+'_+----+----+----+----+----+----+----+----+
 ;;      | :id         |-     /                                 |
-;;      | :desc       |     /     dpL                       job methods
-;;      | :handler    |    /    ,XPXYb.               +---------------------+
-;;      | :schedule   |   /    dP']X[`XL              | add-(all)-job(s)    |
-;;      | :enabled    |  /    `'  ]X[  "              | remove-(all)-job(s) |
-;;      |             | /         ]X[                 | enable(d?)          |
-;;      |             |/          ]X[                 | disable(d?)         |
-;;      +-------------+           ]X[                 | toggle              |
-;;           job               ....:.....             | enabled-job(-id)s   |
-;;                         ...!''''''''''!..          | disabled-job(-id)s  |
-;;                       ,,'''            '`!.        | $job                |
-;;                      .!'    every second  `!.      +---------------------+
+;;      | :desc       |     /     dpL                       service methods
+;;      | :handler    |    /    ,XPXYb.               +-------------------------+
+;;      | :schedule   |   /    dP']X[`XL              | add-(all)-service(s)    |
+;;      | :enabled    |  /    `'  ]X[  "              | remove-(all)-service(s) |
+;;      |             | /         ]X[                 | enable(d?)              |
+;;      |             |/          ]X[                 | disable(d?)             |
+;;      +-------------+           ]X[                 | toggle                  |
+;;        service               ....:.....            | enabled-service(-id)s   |
+;;                         ...!''''''''''!..          | disabled-service(-id)s  |
+;;                       ,,'''            '`!.        | $                       |
+;;                      .!'    every second  `!.      +-------------------------+
 ;;            ................  looks at the   !.
-;;            | status map   |  job-list and   `!.
-;;            |              |  triggers the    `!
-;;            | :thread      |  job handler if  ;!;
-;;            | :last-run    |  the job has     ,!'        cron methods
+;;            | status map   |  service list    `!.
+;;            |              |  triggers the     `!
+;;            | :thread      |  handler if       ;!;
+;;            | :last-run    |  the service has  ,!'        cron methods
 ;;            |______________|  been scheduled  !'    +---------------------+
 ;;                                             ,'     |                     |
 ;;                     `!.                   ,,'      |  running?  start!   |
@@ -34,108 +34,108 @@
   (:require [clj-time.core :as t]
             [clj-time.local :as lt]))
 
-(def ^:dynamic *job-list* (ref {}))
+(def ^:dynamic *service-list* (ref {}))
 (def ^:dynamic *cronj* (atom {:thread nil
                              :last-run nil}))
 
-(def !required-job-keys [:id :desc :handler :schedule])
-(def !optional-job-map {:enabled true})
+(def !required-service-keys [:id :desc :handler :schedule])
+(def !optional-service-map {:enabled true})
 (def !default-check-interval 50) ;;ms
 
-(defn all-jobs []
+(defn all-services []
   (map deref
-       (vals @*job-list*)))
+       (vals @*service-list*)))
 
-(defn all-job-ids []
-  (keys @*job-list*))
+(defn all-service-ids []
+  (keys @*service-list*))
 
-(defn job-exists? [job-id]
-  (contains? @*job-list* job-id))
+(defn service-exists? [service-id]
+  (contains? @*service-list* service-id))
 
-(defn job-info [job-id]
-  (if (job-exists? job-id)
-    (deref (@*job-list* job-id))))
+(defn service-info [service-id]
+  (if (service-exists? service-id)
+    (deref (@*service-list* service-id))))
 
-(defn is-job? [job]
+(defn is-service? [service]
   (every? true?
-          (map #(contains? job %) !required-job-keys)))
+          (map #(contains? service %) !required-service-keys)))
 
-(defn add-job [job]
-  (if (is-job? job)
+(defn add-service [service]
+  (if (is-service? service)
     (dosync
-     (alter *job-list* assoc (:id job)
-            (atom (into !optional-job-map job))))
-    (throw (Exception. "The job is not a valid job"))))
+     (alter *service-list* assoc (:id service)
+            (atom (into !optional-service-map service))))
+    (throw (Exception. "The service is not a valid service"))))
 
-(defn remove-job [job-id]
+(defn remove-service [service-id]
   (dosync
-   (alter *job-list* dissoc job-id)))
+   (alter *service-list* dissoc service-id)))
 
-(defn remove-all-jobs []
+(defn remove-all-services []
   (dosync
-   (alter *job-list* empty)))
+   (alter *service-list* empty)))
 
-(defn $job
-  ([job-id k]
-     (if-let [job (@*job-list* job-id)]
-       (@job k)))
-  ([job-id k v]
-     (if-let [job (@*job-list* job-id)]
-       (swap! job assoc k v)
-       (throw (Exception. "The job does not exist")))))
+(defn $
+  ([service-id k]
+     (if-let [service (@*service-list* service-id)]
+       (@service k)))
+  ([service-id k v]
+     (if-let [service (@*service-list* service-id)]
+       (swap! service assoc k v)
+       (throw (Exception. "The service does not exist")))))
 
-(defn enable [job-id]
-  ($job job-id :enabled true))
+(defn enable [service-id]
+  ($ service-id :enabled true))
 
-(defn disable [job-id]
-  ($job job-id :enabled false))
+(defn disable [service-id]
+  ($ service-id :enabled false))
 
-(defn enabled? [job-id]
-  ($job job-id :enabled))
+(defn enabled? [service-id]
+  ($ service-id :enabled))
 
 (def disabled? (comp not enabled?))
 
-(defn toggle [job-id]
-  (if (enabled? job-id)
-    (disable job-id)
-    (enable job-id)))
+(defn toggle [service-id]
+  (if (enabled? service-id)
+    (disable service-id)
+    (enable service-id)))
 
-(defn enabled-jobs []
-  (filter #(true? (:enabled %)) (all-jobs)))
+(defn enabled-services []
+  (filter #(true? (:enabled %)) (all-services)))
 
-(defn enabled-job-ids []
-  (map :id (enabled-jobs)))
+(defn enabled-service-ids []
+  (map :id (enabled-services)))
 
-(defn disabled-jobs []
-  (filter #(false? (:enabled %)) (all-jobs)))
+(defn disabled-services []
+  (filter #(false? (:enabled %)) (all-services)))
 
-(defn disabled-job-ids []
-  (map :id (disabled-jobs)))
+(defn disabled-service-ids []
+  (map :id (disabled-services)))
 
-(defn- run-job* [job-id dtime]
+(defn- run-service* [service-id dtime]
   (cond
-    (false? (job-exists? job-id))
-    (println "Job (" job-id ") does not exist")
+    (false? (service-exists? service-id))
+    (println "Job (" service-id ") does not exist")
 
-    (disabled? job-id) nil ;;(println "Job (" job-id ") is not enabled")
+    (disabled? service-id) nil ;;(println "Job (" service-id ") is not enabled")
 
     :else
     (do
       (try
-        (let [job     (job-info job-id)]
-          ((:handler job) dtime))
+        (let [service   (service-info service-id)
+              handler   (:handler service)]
+          (handler dtime))
         (catch Exception e (.printStackTrace e))))))
 
 (defn -* [] :*)
 
 (defn --
+  ([s] 
+    (fn [v] (zero? (mod v period))))
   ([a b]
      (range a (inc b)))
   ([a b s]
      (range a (inc b) s)))
-
-(defn -| [period]
- (fn [v] (zero? (mod v period))))
 
 (defn- to-time-array [dt]
   (map #(% dt)
@@ -159,9 +159,9 @@
       (do
         (swap! *cronj* assoc :last-run nr)
         ;; (println nr) ;; FOR DEBUGGING
-        (doseq [job (all-jobs)]
-          (if (match-cronj? nr (:schedule job))
-            (future (run-job* (:id job) dtime))))))))
+        (doseq [service (all-services)]
+          (if (match-cronj? nr (:schedule service))
+            (future (run-service* (:id service) dtime))))))))
 
 (defn- cronj-loop
   ([] (cronj-loop !default-check-interval))
@@ -186,7 +186,7 @@
 
 (def running? (comp not stopped?))
 
-(defn start! [ & args]
+(defn start! [& args]
   (cond
     (stopped?)
     (swap! *cronj* assoc :thread
