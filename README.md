@@ -24,22 +24,12 @@ I needed something that
 
 
 ## Usage
-    (use '[cronj.core :only [-- -*]])
     (require '[cronj.core :as cj])
-    (def every-five-seconds
-      (cj/->Schedule. (-- 5)        ;; seconds in minute
-                 (-*)          ;; minutes in hour
-                 (-*)          ;; hours in day
-                 (-*)          ;; day of week
-                 (-*)          ;; day of month
-                 (-*)          ;; month of year
-                 (-*)          ;; year
-      ))
-
-    (cj/add-service {:id 0 :desc 0 :handler #(println "job 0:" %) :schedule every-five-seconds})
+    (cj/add-service {:id 0 :desc 0 :handler #(println "job 0:" %) :schedule "/5 * * * * * *"}) ;; every 5 seconds
     (cj/add-service {:id 1 :desc 1 :handler #(println "job 1:" %) :schedule "/3 * * * * * *"}) ;; every 3 seconds
     (cj/start!) ;; default checking interval is 50ms, try (cj/start! 20) for a checking interval of 20ms
     ;; to stop, type (cj/stop!)
+    (cj/stop!)
 
 
 #### More cron-like usage

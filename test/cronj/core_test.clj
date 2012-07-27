@@ -1,6 +1,6 @@
 (ns cronj.core-test
   (:use midje.sweet
-        [cronj.core :only [-- -* -|]])
+        [cronj.core :only [-- -*]])
   (:require [cronj.core :as cj]
             [clj-time.core :as t]))
 
@@ -13,7 +13,7 @@
 
 (tabular
  (fact "Testing the 'match-entry?' function"
-   (#'cj/match-entry? ?t-entry ?c-entry) => ?expected)
+   (#'cj/match-array-entry? ?t-entry ?c-entry) => ?expected)
 
  ?t-entry        ?c-entry           ?expected
  1               :*                 true
@@ -30,17 +30,17 @@
  40              (-- 30 40 5)       true
  35              (-- 30 40 5)       true
  36              (-- 30 40 5)       falsey
- 30              (-| 5)             true
- 30              (-| 2)             true
- 35              (-| 5)             true
- 35              (-| 2)             falsey)
+ 30              (-- 5)             true
+ 30              (-- 2)             true
+ 35              (-- 5)             true
+ 35              (-- 2)             falsey)
 
 (def every-5-seconds-0 [(-- 0 60 5) (-*) (-*) (-*) (-*) (-*) (-*)])
-(def every-5-seconds-1 [(-| 5) (-*) (-*) (-*) (-*) (-*) (-*)])
+(def every-5-seconds-1 [(-- 5) (-*) (-*) (-*) (-*) (-*) (-*)])
 
 (tabular
  (fact "Testing the 'match-cron?' function"
-   (#'cj/match-cronj? ?t-arr ?c-arr) => ?expected)
+   (#'cj/match-array? ?t-arr ?c-arr) => ?expected)
 
  ?t-arr                    ?c-arr            ?expected
  [30 14 0 4 26 7 2012]     every-5-seconds-0   true

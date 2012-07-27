@@ -51,110 +51,54 @@
 (def !default-interval 50) ;;ms
 
 
-;; There are 3 different representations of cronj schedule data:
-;;   string: (for humans)        "   *              2,4           2-9            /8      ...  "
-;;    array: (for efficiency)    [ (-*)          [2 4 6]        (-- 2 9)      (-- 8)     ...  ]
-;;   record: (for translation)   {[[:*]]    [[:# 2] [:# 4]]    [[:- 2 9]]    [[:| 8]]    ...  }
-;;
-;;
-;;           How the representations are connected
-;;
-;;               +---------+  rec-to-str  +---------+              +---------+
-;;               |         | <----------- |         |              |         |
-;;               |         |              |         |              |         |
-;;               | string  |              | record  | -----------> |  array  |
-;;               |         |              |         | rec-to-array |         |
-;;               |         | -----------> |         |              |         |
-;;               +---------+  str-to-rec  +---------+              +---------+
-;;                                                                   used in
-;;                                                                  cron-loop
-;;
-;; The schedules are used when adding new jobs or when changing job schedules
-;;
-;; In hindsight, I could have just converted the string representation straight into
-;; the array format but having the record there makes for ease of use (in the future)
+ ;; There are 2 different representations of cronj schedule data:
+ ;;   string: (for humans)        "   *       2,4      2-9         /8      ...  "
+ ;;    array: (for efficiency)    [ (-*)   [2 4 6]   (-- 2 9)   (-- 8)     ...  ]
+ ;;
+ ;;            :schedule                 :schedule-arr
+ ;;           +---------+                 +---------+
+ ;;           |         |                 |         |
+ ;;           |         |                 |         |
+ ;;           | string  |    -----------> |  array  |
+ ;;           |         |    parse-str    |         |
+ ;;           |         |                 |         |
+ ;;           +---------+                 +---------+
+ ;;            for human                    used in
+ ;;            use to add                  cron-loop
+ ;;            services
 
 
 ;; Methods for type conversion
-(defn to-int [x]
-  (Integer/parseInt x))
+(defn to-int [x] (Integer/parseInt x))
 
 ;; Array Representation
 (defn -* [] :*)
 
 (defn --
-  ([s] (fn [v] (zero? (mod v s))))
-  ([a b]
-     (range a (inc b)))
-  ([a b s]
-     (range a (inc b) s)))
+  ([s]     (fn [v] (zero? (mod v s))))
+  ([a b]   (range a (inc b)))
+  ([a b s] (range a (inc b) s)))
 
-;; Record Representation
-
-(defrecord Schedule [sec minute hour dayw daym month year])
-(defn create-record [sec minute hour dayw daym month year]
-  (Schedule. sec minute hour dayw daym month year))
-
-(def !len-cronj-array (count (Schedule/getBasis)))
-
-(defn- str-to-elem [es]
-  (cond (= es "*") [:*]
-        (re-find #"^\d+$" es) [:# (to-int es)]
-
-        (re-find #"^/\d+$" es) [:| (to-int (.substring es 1))]
-
+;; String to Array Methods
+(defn- parse-elem-str [es]
+  (cond (= es "*") :*
+        (re-find #"^\d+$" es) (to-int es)
+        (re-find #"^/\d+$" es) (-- (to-int (.substring es 1)))
         (re-find #"^\d+-\d+$" es)
-        (apply vector :-
+        (apply --
                (sort (map to-int (split es #"-"))))))
 
-(defn- str-to-elems-str [s]
+(defn- parse-elemlist-str [s]
   (let [e-toks (re-seq #"[^,]+" s)]
-    (map str-to-elem e-toks)))
+    (map parse-elem-str e-toks)))
 
-(defn str-to-rec [s]
+(defn parse-str [s]
   (let [c-toks (re-seq #"[^\s]+" s)
         len-c (count c-toks)]
-    (apply create-record (map str-to-elems-str c-toks))))
+    (map parse-elemlist-str c-toks)))
 
-(defn- elem-to-str [ev]
-  (let [eh (first ev)]
-    (cond (= eh :*) "*"
-          (= eh :#) (str (second ev))
-          (= eh :|) (str "/" (second ev))
-          (= eh :-) (str (second ev) "-" (last ev))
-          :else "")))
 
-(defn- elem-list-to-str [evl]
-  (join "," (map elem-to-str evl)))
-
-(defn rec-to-str [r]
-  (let [k-arr (map keyword (Schedule/getBasis))
-        all-evl (map #(% r) k-arr)
-        all-estr (map elem-list-to-str all-evl)]
-    (join " " all-estr)))
-
-(defn- elem-to-array [ev]
-  (let [eh (first ev)]
-    (cond (= eh :*) :*
-          (= eh :#) (second ev)
-          (= eh :|) (-- (second ev))
-          (= eh :-) (-- (second ev) (last ev))
-          :else nil)))
-
-(defn- elem-list-to-array [evl]
-  (let [li (filter (comp not nil?)
-                   (map elem-to-array evl))
-        len (count li)]
-    (if (= 1 len) (first li) li)))
-
-(defn rec-to-array [r]
-  (let [k-arr (map keyword (Schedule/getBasis))
-        all-evl (map #(% r) k-arr)
-        all-estr (map elem-list-to-array all-evl)]
-    (vec all-estr)))
-
-;; Service list methods
-
+;; Service List Methods
 (defn- is-service? [service]
   (every? true?
           (map #(contains? service %) !required-service-keys)))
@@ -173,27 +117,16 @@
 (defn list-all-service-ids []
   (keys @*service-list*))
 
-(defn- adjust-service-map [service]
-  (let [sch (:schedule service)
-        tp  (type sch)]
-    (cond (= tp String)
-          (let [rec (str-to-rec sch)
-                arr (rec-to-array rec)]
-            (assoc service :schedule rec :schedule-str sch :schedule-arr arr))
-
-          (= tp Schedule)
-          (let [st  (rec-to-str sch)
-                arr (rec-to-array sch)]
-            (assoc service :schedule-str st :schedule-arr arr))
-
-          :else (throw (Exception. "The schedule entered in invalid")))))
-
 (defn add-service [service]
   (if (is-service? service)
-    (let [adj (adjust-service-map service)]
-      (dosync
-       (alter *service-list* assoc (:id adj)
-              (atom (into !optional-service-map adj)))))
+    (let [sch (:schedule service)
+          adj (assoc service :schedule-arr (parse-str sch))
+          id  (:id adj)]
+      (if (service-exists? id)
+        (throw (Exception. "There is already a service with the same id"))
+        (dosync
+         (alter *service-list* assoc (:id adj)
+                (atom (into !optional-service-map adj))))))
     (throw (Exception. "The service is not a valid service"))))
 
 (defn add-services [& services]
@@ -280,26 +213,19 @@
        (swap! service assoc k v)
        (throw (Exception. "The service does not exist")))))
 
-(defn get-schedule
-  ([service-id] (get-schedule service-id :string))
-  ([service-id rtype]
-     (cond (= rtype :record) ($ service-id :schedule)
-           (= rtype :array) ($ service-id :schedule-arr)
-           :else ($ service-id :schedule-str))))
+(defn get-desc [service-id] ($ service-id :desc))
+(defn set-desc [service-id desc] ($ service-id :desc desc))
 
+(defn get-handler [service-id] ($ service-id :handler))
+(defn set-handler [service-id f] ($ service-id :handler f))
+
+(defn get-schedule [service-id] ($ service-id :schedule))
 (defn set-schedule [service-id sch]
-  (let [old (@*service-list* service-id)
-        adj (adjust-service-map
-             (assoc @old :schedule sch))]
-    (swap! old into adj)))
+  ($ service-id :schedule sch)
+  ($ service-id :schedule-arr (parse-str sch)))
 
-(defn get-handler [service-id]
-  ($ service-id :handler))
 
-(defn set-handler [service-id f]
-  ($ service-id :handler f))
-
-;; METHODS FOR cronj thread
+;; Cron Thread Methods
 (defn- to-time-array [dt]
   (map #(% dt)
        [t/sec t/minute t/hour t/day-of-week t/day t/month t/year]))
@@ -367,17 +293,3 @@
 (defn restart! [& args]
   (stop!)
   (apply start! args))
-
-
-;;Test code
-(comment
-  ((-- 5) 12)
-  (add-service {:id 0 :desc 0 :handler #'println :schedule "/4 * * * * * *"})
-  (list-service 0)
-  ((-> (list-service 0) :schedule-arr first) 4)
-  (start!)
-  (set-schedule 0 "/5 * * * * * *")
-  (set-handler 0 #(println "hello" %))
-  (set-handler 0 println)
-  (stop!)
-  (restart! 10))
