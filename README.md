@@ -35,7 +35,7 @@ Tasks can be added and removed on the fly through the `cronj` library interface 
                 __...--+----+----+----+----+----+----+----+----+----+----+----+----+
        _..---'""      _|.--"|    |    |    |    |    |    |    |    |    |    |    |
       +-------------+'_+----+----+----+----+----+----+----+----+----+----+----+----+
-      | task     |-     /                                              |
+      | task        |-     /                                              |
       |             |     /                     X                         |
       |    :id      |    /                    XXXXX               task-list methods
       |    :desc    |   /                    XXXXXXX          +-------------------------+
