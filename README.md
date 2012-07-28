@@ -23,7 +23,7 @@ In project.clj, add to dependencies:
 
 ### Idea
 
-So the basic idea is the concept of a "task" that have the following attributes:
+So the basic idea is the concept of a "task" that has the following attributes:
 
       - "id" and "description" for meta description
       - "schedule", to specify when the task should run
