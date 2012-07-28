@@ -2,6 +2,12 @@
 
 This is a cron-inspired task-scheduling library.
 
+### Installation:
+ 
+In project.clj, add to dependencies:
+     
+     [cronj "0.1.0"]
+
 ### Idea
 
 So the basic idea is the concept of a "task" that have the following attributes:
@@ -28,13 +34,7 @@ I needed something that
   - would spawn as many threads as needed, so that tasks started at earlier intervals could exist along side tasks started at later intervals.
   - an additional design requirement required that task handlers are passed a date-time object, so that the handler itself is aware of the time when it was initiated.
 
-### Installation:
- 
-In project.clj, add to dependencies:
-     
-     [cronj "0.1.0"]
-
-### Usage:
+## Usage:
     (require '[cronj.core :as cj])
     (cj/add-task {:id 0 :desc 0 :handler #(println "job 0:" %) :schedule "/5 * * * * * *"}) ;; every 5 seconds
     (cj/add-task {:id 1 :desc 1 :handler #(println "job 1:" %) :schedule "/3 * * * * * *"}) ;; every 3 seconds
@@ -77,7 +77,7 @@ shell command. See source code of `sh-print` for the simplest example usage.
                                                              (:out output))))
                  :schedule "/5 * * * * * *"})
 
-### Todo:
+## Todo:
 ##### commandline usage for single shell programs
 
     java -jar cronj.jar --task "echo $(date)" --schedule "/5 * * * * * *"
