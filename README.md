@@ -2,7 +2,7 @@
 
 This is a cron-inspired task-scheduling library.
 
-## Idea
+### Idea
 
 So the basic idea is the concept of a "task" that have the following attributes:
 
@@ -10,9 +10,9 @@ So the basic idea is the concept of a "task" that have the following attributes:
       - "schedule", to specify when the task should run
       - "handler", the actual procedure that provides the functionality for a task
 
-Tasks can be added and removed on the fly through the `cronj` library interface and `cronj` will keep an eye out on the time. Once a task has been scheduled to start, `cronj` will launch the task-handler in another thread.
+Tasks can be added and removed on the fly through the `cronj` library interface and `cronj` will keep an eye out on the time. At the time a task has been scheduled to start, `cronj` will launch the task handler in another thread.
 
-## Motivation
+### Motivation
 
 I have found many scheduling libraries for clojure
   - [quartzite](https://github.com/michaelklishin/quartzite)
@@ -28,13 +28,13 @@ I needed something that
   - would spawn as many threads as needed, so that tasks started at earlier intervals could exist along side tasks started at later intervals.
   - an additional design requirement required that task handlers are passed a date-time object, so that the handler itself is aware of the time when it was initiated.
 
-## Installation:
+### Installation:
  
 In project.clj, add to dependencies:
      
      [cronj "0.1.0"]
 
-## Usage:
+### Usage:
     (require '[cronj.core :as cj])
     (cj/add-task {:id 0 :desc 0 :handler #(println "job 0:" %) :schedule "/5 * * * * * *"}) ;; every 5 seconds
     (cj/add-task {:id 1 :desc 1 :handler #(println "job 1:" %) :schedule "/3 * * * * * *"}) ;; every 3 seconds
@@ -43,7 +43,7 @@ In project.clj, add to dependencies:
     (cj/stop!)
 
 
-#### More cron-like usage:
+##### More cron-like usage:
 
     (cj/add-task {:id "print-date"
                  :desc "prints out the date every 5 seconds"
@@ -57,7 +57,7 @@ In project.clj, add to dependencies:
                  :handler #'println
                  :schedule "/5  9,10  * 5 * 6-8 2012-2020"})
 
-#### launching shell commands
+##### launching shell commands
 
 Shell commands can be launched using the alternative map description:
 
@@ -77,8 +77,8 @@ shell command. See source code of `sh-print` for the simplest example usage.
                                                              (:out output))))
                  :schedule "/5 * * * * * *"})
 
-## Todo:
-#### commandline usage for single shell programs
+### Todo:
+##### commandline usage for single shell programs
 
     java -jar cronj.jar --task "echo $(date)" --schedule "/5 * * * * * *"
 
