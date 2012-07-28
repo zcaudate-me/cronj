@@ -31,6 +31,42 @@ So the basic idea is the concept of a "task" that have the following attributes:
 
 Tasks can be added and removed on the fly through the `cronj` library interface and `cronj` will keep an eye out on the time. At the time a task has been scheduled to start, `cronj` will launch the task handler in another thread.
 
+                                        task-list
+                __...--+----+----+----+----+----+----+----+----+----+----+----+----+
+       _..---'""      _|.--"|    |    |    |    |    |    |    |    |    |    |    |
+      +-------------+'_+----+----+----+----+----+----+----+----+----+----+----+----+
+      | task     |-     /                                              |
+      |             |     /                     X                         |
+      |    :id      |    /                    XXXXX               task-list methods
+      |    :desc    |   /                    XXXXXXX          +-------------------------+
+      |  ++:handler |  /                    XXXXXXXXX         | add-task(s)             |
+      | +++:schedule| /                        XXX            | remove-(all)-task(s)    |
+      | || :enabled |/                         XXX            | enable-(all)-task(s)    |
+      +-++----------+                          XXX            | disable-(all)-task(s)   |
+        ||  ,-.                                XXX            | toggle-(all)-task(s)    |
+        |+-(   ) fn[time]                      XXX            | list-(all)-task(s)      |
+        |   `-'                                XXX            | list-enabled-tasks      |
+       +-------------------------+             XXX            | list-disabled-tasks     |
+       |  "* 8 /2 7-9 2,3 * *"   |             XXX            |                         |
+       +-------------------------+             XXX            | $ (attribute selector)  |
+       |  :sec    [:*]           |             XXX            | (get/set)-schedule      |
+       |  :min    [:# 8]         |             XXX            | (get/set)-handler       |
+       |  :hour   [:| 2]         |          XXXXXXXXX         +-------------------------+
+       |  :dayw   [:- 7 9]       |        XX         XX
+       |  :daym   [:# 2] [:# 3]  |      XX             XX
+       |  :month  [:*]           |     X      cronj      X            cron methods
+       |  :year   [:*]           |    X                   X   +-------------------------+
+       +-------------------------+    X     :thread       X   |                         |
+                                      X     :last-run     X   |  +running?   +start!    |
+          cronj function               X    :interval    X    |  +stopped?   +stop!     |
+          --------------                XX             XX     |  +-interval  +-thread   |
+         At every interval                XX         XX       |  +-last-run             |
+         looks at task                      XXXXXXXXX         |                         |
+         list and triggers                                    +-------------------------+
+         handler functions
+         for each enabled
+         task.
+
 
 ## Usage:
 
