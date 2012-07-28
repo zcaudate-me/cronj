@@ -17,7 +17,7 @@ I have found many scheduling libraries for clojure
   - [at-at](https://github.com/overtone/at-at)
   - [monotony](https://github.com/aredington/monotony)
 
-However, none of them are suited to what I needed to do. The first three all follow the cron convention. The "task" (also called a "job") can only be scheduled at whole minute intervals. The last scheduling library [at-at](https://github.com/overtone/at-at) had milli-second resolution, but was limited in the number of threads that was used. It was only good for looking after a single task that did not overlap between calls. [monotony](https://github.com/aredington/monotony) was... well... monotony uses core.logic, which is something that I am yet to understand.
+However, none of them are suited to what I needed to do. The first three all follow the cron convention. The "task" (also called a "job") can only be scheduled at whole minute intervals. [at-at](https://github.com/overtone/at-at) had milli-second resolution, but was limited in the number of threads that was used. It was only good for looking after a single task that did not overlap between calls. [monotony](https://github.com/aredington/monotony) uses core.logic, which is something that I am yet to understand.
 
 I needed something that
   - started scheduled tasks with a per-second interval having high system-time accuracy.
