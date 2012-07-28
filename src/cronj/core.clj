@@ -1,20 +1,20 @@
 ;;
-;;                                     service-list
+;;                                     task-list
 ;;             __...--+----+----+----+----+----+----+----+----+----+----+----+----+
 ;;    _..---'""      _|.--"|    |    |    |    |    |    |    |    |    |    |    |
 ;;   +-------------+'_+----+----+----+----+----+----+----+----+----+----+----+----+
-;;   | service     |-     /                                              |
+;;   | task     |-     /                                              |
 ;;   |             |     /                     X                         |
-;;   |    :id      |    /                    XXXXX               service-list methods
+;;   |    :id      |    /                    XXXXX               task-list methods
 ;;   |    :desc    |   /                    XXXXXXX          +-------------------------+
-;;   |  ++:handler |  /                    XXXXXXXXX         | add-service(s)          |
-;;   | +++:schedule| /                        XXX            | remove-(all)-service(s) |
-;;   | || :enabled |/                         XXX            | enable-(all)-service(s) |
-;;   +-++----------+                          XXX            | disable-(all)-service(s)|
-;;     ||  ,-.                                XXX            | toggle-(all)-service(s) |
-;;     |+-(   ) fn[time]                      XXX            | list-(all)-service(s)   |
-;;     |   `-'                                XXX            | list-enabled-services   |
-;;    +-------------------------+             XXX            | list-disabled-services  |
+;;   |  ++:handler |  /                    XXXXXXXXX         | add-task(s)          |
+;;   | +++:schedule| /                        XXX            | remove-(all)-task(s) |
+;;   | || :enabled |/                         XXX            | enable-(all)-task(s) |
+;;   +-++----------+                          XXX            | disable-(all)-task(s)|
+;;     ||  ,-.                                XXX            | toggle-(all)-task(s) |
+;;     |+-(   ) fn[time]                      XXX            | list-(all)-task(s)   |
+;;     |   `-'                                XXX            | list-enabled-tasks   |
+;;    +-------------------------+             XXX            | list-disabled-tasks  |
 ;;    |  "* 8 /2 7-9 2,3 * *"   |             XXX            |                         |
 ;;    +-------------------------+             XXX            | $ (attribute selector)  |
 ;;    |  :sec    [:*]           |             XXX            | (get/set)-schedule      |
@@ -29,11 +29,11 @@
 ;;       cronj function               X    :interval    X    |  +stopped?   +stop!     |
 ;;       --------------                XX             XX     |  +-interval  +-thread   |
 ;;      At every interval                XX         XX       |  +-last-run             |
-;;      looks at service                   XXXXXXXXX         |                         |
+;;      looks at task                   XXXXXXXXX         |                         |
 ;;      list and triggers                                    +-------------------------+
 ;;      handler functions
 ;;      for each enabled
-;;      service.
+;;      task.
 
 
 (ns cronj.core
@@ -42,15 +42,15 @@
   (:require [clj-time.core :as t]
             [clj-time.local :as lt]))
 
-(def ^:dynamic *service-list* (ref {}))
+(def ^:dynamic *task-list* (ref {}))
 (def ^:dynamic *cronj* (atom {:thread nil
                               :last-run nil
                               :interval nil}))
 
-(def !required-service-keys [:id :desc :handler :schedule])
-(def !required-shell-service-keys [:id :desc :cmd :schedule])
+(def !required-task-keys [:id :desc :handler :schedule])
+(def !required-shell-task-keys [:id :desc :cmd :schedule])
 
-(def !optional-service-map {:enabled true})
+(def !optional-task-map {:enabled true})
 (def !default-interval 50) ;;ms
 
 
@@ -68,7 +68,7 @@
  ;;           +---------+                 +---------+
  ;;            for human                    used in
  ;;            use to add                  cron-loop
- ;;            services
+ ;;            tasks
 
 
 ;; Methods for type conversion
@@ -102,27 +102,27 @@
 
 
 ;; Service List Methods
-(defn- is-service? [service]
+(defn- is-task? [task]
   (every? true?
-          (map #(contains? service %) !required-service-keys)))
+          (map #(contains? task %) !required-task-keys)))
 
-(defn- is-shell-service? [service]
+(defn- is-shell-task? [task]
   (every? true?
-          (map #(contains? service %) !required-shell-service-keys)))
+          (map #(contains? task %) !required-shell-task-keys)))
 
-(defn service-exists? [service-id]
-  (contains? @*service-list* service-id))
+(defn task-exists? [task-id]
+  (contains? @*task-list* task-id))
 
-(defn list-service [service-id]
-  (if (service-exists? service-id)
-    (deref (@*service-list* service-id))))
+(defn list-task [task-id]
+  (if (task-exists? task-id)
+    (deref (@*task-list* task-id))))
 
-(defn list-all-services []
+(defn list-all-tasks []
   (map deref
-       (vals @*service-list*)))
+       (vals @*task-list*)))
 
-(defn list-all-service-ids []
-  (keys @*service-list*))
+(defn list-all-task-ids []
+  (keys @*task-list*))
 
 (defn sh-handler [cmd output-fn]
   (fn [dtime]
@@ -132,124 +132,124 @@
 (defn sh-print [dtime output]
   (println (:out output)))
 
-(defn add-service! [service]
-  (let [sch     (:schedule service)
-        adj     (assoc service :schedule-arr (parse-str sch))
+(defn add-task! [task]
+  (let [sch     (:schedule task)
+        adj     (assoc task :schedule-arr (parse-str sch))
         id      (:id adj)
         add-fn  #(dosync
-                  (alter *service-list* assoc id
-                         (atom (into !optional-service-map %))))]
-    (cond (is-service? adj)
-          (add-fn service)
+                  (alter *task-list* assoc id
+                         (atom (into !optional-task-map %))))]
+    (cond (is-task? adj)
+          (add-fn task)
 
-          (is-shell-service? adj)
+          (is-shell-task? adj)
           (add-fn (assoc adj :handler
                          (sh-handler (:cmd adj)
                                      (or (:cmd-fn adj)
                                          sh-print))))
 
           :else
-          (throw (Exception. "The service map is not a valid." service)))))
+          (throw (Exception. "The task map is not a valid." task)))))
 
-(defn add-service [service]
-    (if (service-exists? (:id service))
-      (throw (Exception. "There is already a service with the same id"))
-      (add-service! service)))
+(defn add-task [task]
+    (if (task-exists? (:id task))
+      (throw (Exception. "There is already a task with the same id"))
+      (add-task! task)))
 
-(defn add-services! [& services]
-  (doseq [s services] (add-service! s)))
+(defn add-tasks! [& tasks]
+  (doseq [s tasks] (add-task! s)))
 
-(defn remove-service [service-id]
+(defn remove-task [task-id]
   (dosync
-   (alter *service-list* dissoc service-id)))
+   (alter *task-list* dissoc task-id)))
 
-(defn remove-all-services []
+(defn remove-all-tasks []
   (dosync
-   (alter *service-list* empty)))
+   (alter *task-list* empty)))
 
 (defn $
-  ([service-id k]
-     (if-let [service (@*service-list* service-id)]
-       (@service k)))
-  ([service-id k v]
-     (if-let [service (@*service-list* service-id)]
-       (swap! service assoc k v)
-       (throw (Exception. "The service does not exist")))))
+  ([task-id k]
+     (if-let [task (@*task-list* task-id)]
+       (@task k)))
+  ([task-id k v]
+     (if-let [task (@*task-list* task-id)]
+       (swap! task assoc k v)
+       (throw (Exception. "The task does not exist")))))
 
-(defn doto-all-services [f]
-  (doseq [id (list-all-service-ids)] (f id)))
+(defn doto-all-tasks [f]
+  (doseq [id (list-all-task-ids)] (f id)))
 
-(defn enable-service [service-id]
-  ($ service-id :enabled true))
+(defn enable-task [task-id]
+  ($ task-id :enabled true))
 
-(defn enable-all-services []
-  (doto-all-services enable-service))
+(defn enable-all-tasks []
+  (doto-all-tasks enable-task))
 
-(defn disable-service [service-id]
-  ($ service-id :enabled false))
+(defn disable-task [task-id]
+  ($ task-id :enabled false))
 
-(defn disable-all-services []
-  (doto-all-services disable-service))
+(defn disable-all-tasks []
+  (doto-all-tasks disable-task))
 
-(defn service-enabled? [service-id]
-  ($ service-id :enabled))
+(defn task-enabled? [task-id]
+  ($ task-id :enabled))
 
-(def service-disabled? (comp not service-enabled?))
+(def task-disabled? (comp not task-enabled?))
 
-(defn toggle-service [service-id]
-  (if (service-enabled? service-id)
-    (disable-service service-id)
-    (enable-service service-id)))
+(defn toggle-task [task-id]
+  (if (task-enabled? task-id)
+    (disable-task task-id)
+    (enable-task task-id)))
 
-(defn toggle-all-services []
-  (doto-all-services toggle-service))
+(defn toggle-all-tasks []
+  (doto-all-tasks toggle-task))
 
-(defn list-enabled-services []
-  (filter #(true? (:enabled %)) (list-all-services)))
+(defn list-enabled-tasks []
+  (filter #(true? (:enabled %)) (list-all-tasks)))
 
-(defn list-enabled-service-ids []
-  (map :id (list-enabled-services)))
+(defn list-enabled-task-ids []
+  (map :id (list-enabled-tasks)))
 
-(defn list-disabled-services []
-  (filter #(false? (:enabled %)) (list-all-services)))
+(defn list-disabled-tasks []
+  (filter #(false? (:enabled %)) (list-all-tasks)))
 
-(defn list-disabled-service-ids []
-  (map :id (list-disabled-services)))
+(defn list-disabled-task-ids []
+  (map :id (list-disabled-tasks)))
 
-(defn- run-service* [service-id dtime]
+(defn- run-task* [task-id dtime]
   (cond
-    (false? (service-exists? service-id))
-    (println "Job (" service-id ") does not exist")
+    (false? (task-exists? task-id))
+    (println "Job (" task-id ") does not exist")
 
-    (service-disabled? service-id) nil ;;(println "Job (" service-id ") is not enabled")
+    (task-disabled? task-id) nil ;;(println "Job (" task-id ") is not enabled")
 
     :else
     (do
       (try
-        (let [service   (list-service service-id)
-              handler   (:handler service)]
+        (let [task   (list-task task-id)
+              handler   (:handler task)]
           (handler dtime))
         (catch Exception e (.printStackTrace e))))))
 
 (defn $
-  ([service-id k]
-     (if-let [service (@*service-list* service-id)]
-       (@service k)))
-  ([service-id k v]
-     (if-let [service (@*service-list* service-id)]
-       (swap! service assoc k v)
-       (throw (Exception. "The service does not exist")))))
+  ([task-id k]
+     (if-let [task (@*task-list* task-id)]
+       (@task k)))
+  ([task-id k v]
+     (if-let [task (@*task-list* task-id)]
+       (swap! task assoc k v)
+       (throw (Exception. "The task does not exist")))))
 
-(defn get-desc [service-id] ($ service-id :desc))
-(defn set-desc [service-id desc] ($ service-id :desc desc))
+(defn get-desc [task-id] ($ task-id :desc))
+(defn set-desc [task-id desc] ($ task-id :desc desc))
 
-(defn get-handler [service-id] ($ service-id :handler))
-(defn set-handler [service-id f] ($ service-id :handler f))
+(defn get-handler [task-id] ($ task-id :handler))
+(defn set-handler [task-id f] ($ task-id :handler f))
 
-(defn get-schedule [service-id] ($ service-id :schedule))
-(defn set-schedule [service-id sch]
-  ($ service-id :schedule sch)
-  ($ service-id :schedule-arr (parse-str sch)))
+(defn get-schedule [task-id] ($ task-id :schedule))
+(defn set-schedule [task-id sch]
+  ($ task-id :schedule sch)
+  ($ task-id :schedule-arr (parse-str sch)))
 
 
 ;; Cron Thread Methods
@@ -268,16 +268,16 @@
   (every? true?
           (map match-array-entry? t-arr c-arr)))
 
-(defn- cronj-service-fn [dtime]
+(defn- cronj-task-fn [dtime]
   (let [lr (:last-run @*cronj*)
         nr (to-time-array dtime)]
     (if (or (nil? lr) (not= lr nr))
       (do
         (swap! *cronj* assoc :last-run nr)
         ;;(println nr) ;; FOR DEBUGGING
-        (doseq [service (list-all-services)]
-          (if (match-array? nr (:schedule-arr service))
-            (future (run-service* (:id service) dtime))))))))
+        (doseq [task (list-all-tasks)]
+          (if (match-array? nr (:schedule-arr task))
+            (future (run-task* (:id task) dtime))))))))
 
 (defn stopped?
   ([] (stopped? @*cronj*))
@@ -298,7 +298,7 @@
 
 (defn- cronj-loop []
   (Thread/sleep (:interval @*cronj*))
-  (cronj-service-fn (t/now))
+  (cronj-task-fn (t/now))
   (recur))
 
 (defn start!
