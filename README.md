@@ -53,10 +53,13 @@ I needed something that
     
     (cj/stop!)
 
+    (cj/remove-all-tasks) ;; cleans out the task list
 
-##### tutorial of task scheduling control
+### task scheduling control
 
-tasks can be added and removed whilst cronj is running:
+Tasks can be added and removed whilst cronj is running:
+
+    ;; following on from the previous section
 
     (cj/start!)
     
@@ -82,10 +85,13 @@ tasks can be individually enabled and disabled:
     (cj/enable-task 0)    ;;=> enables the task again
     (cj/toggle-task 0)    ;;=> toggles the task
     
-similarily, operations can be done on the entire list:
+similarily, most operations can also be done on the entire list:
 
-    (cj/enable-all-tasks)  
-    (cj/disable-all-tasks)   ;; you should get the idea
+    (cj/list-all-tasks)
+    (cj/enable-all-tasks)
+    (cj/list-enabled-task-ids)  
+    (cj/disable-all-tasks)
+    (cj/list-disabled-task-ids)   ;; you should get the idea
     (cj/toggle-all-tasks)
 
 task schedules can also be updated dynamically:
