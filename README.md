@@ -1,4 +1,4 @@
-# cronj
+## cronj
 
 This is a cron-inspired task-scheduling library.
 
@@ -36,12 +36,66 @@ I needed something that
 
 ## Usage:
     (require '[cronj.core :as cj])
-    (cj/add-task {:id 0 :desc 0 :handler #(println "job 0:" %) :schedule "/5 * * * * * *"}) ;; every 5 seconds
-    (cj/add-task {:id 1 :desc 1 :handler #(println "job 1:" %) :schedule "/3 * * * * * *"}) ;; every 3 seconds
-    (cj/start!) ;; default checking interval is 50ms, try (cj/start! 20) for a checking interval of 20ms
-    ;; to stop, type (cj/stop!)
+
+    (cj/add-task {:id 0   :desc 0 
+                  :handler #(println "job 0:" %) 
+                  :schedule "/5 * * * * * *"}) ;; every 5 seconds
+    (cj/add-task {:id 1   :desc 1 
+                  :handler #(println "job 1:" %) 
+                  :schedule "/3 * * * * * *"}) ;; every 3 seconds
+
+    (cj/start!) ;; default interval to check the current time is 50ms, 
+                ;; try (cj/start! 20) for an interval of 20ms
+
+    ;; wait for outputs ......
+
+    ;; get bored
+    
     (cj/stop!)
 
+
+##### tutorial of task scheduling control
+
+tasks can be added and removed whilst cronj is running:
+
+    (cj/start!)
+    
+    ;; cronj is running 
+
+    (cj/add-task {:id 0   :desc 0 
+                  :handler #(println "job 0:" %) 
+                  :schedule "/5 * * * * * *"}) ;; every 5 seconds
+    
+    ;; wait a bit and add another task
+    
+    (cj/add-task {:id 1   :desc 1 
+        :handler #(println "job 1:" %) 
+        :schedule "/3 * * * * * *"}) ;; every 3 seconds    
+
+    ;; actually, this task is useless
+    
+    (cj/remove-task 1)
+    
+tasks can be individually enabled and disabled:
+
+    (cj/disable-task 0)   ;;=> disables the task with :id 0
+    (cj/enable-task 0)    ;;=> enables the task again
+    (cj/toggle-task 0)    ;;=> toggles the task
+    
+similarily, operations can be done on the entire list:
+
+    (cj/enable-all-tasks)  
+    (cj/disable-all-tasks)   ;; you should get the idea
+    (cj/toggle-all-tasks)
+
+task schedules can also be updated dynamically:
+
+    ;; whilst cronj is running
+    (cj/set-schedule 0 "/2 * * * * * *") ;; every 2 seconds instead of 3
+
+task handlers can also be updated:
+
+    (cj/set-handler 0 #(println "job 0 changed handlers:" %))
 
 ##### More cron-like usage:
 
@@ -76,6 +130,7 @@ shell command. See source code of `sh-print` for the simplest example usage.
                                                              (str dtime)
                                                              (:out output))))
                  :schedule "/5 * * * * * *"})
+
 
 ## Todo:
 ##### commandline usage for single shell programs
