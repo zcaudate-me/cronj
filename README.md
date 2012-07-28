@@ -8,7 +8,7 @@ So the basic idea is the concept of a "task" that have the following attributes:
       - "schedule", to specify when the task should run
       - "handler", the actual procedure that provides the functionality for a task
 
-Tasks can be added and removed on the fly through the `cronj` library interface and `cronj` will keep an eye out on the time. Once a task has been scheduled to start, `cronj` will launch the handler in another thread.
+Tasks can be added and removed on the fly through the `cronj` library interface and `cronj` will keep an eye out on the time. Once a task has been scheduled to start, `cronj` will launch the task-handler in another thread.
 
 I have found many scheduling libraries for clojure
   - [quartzite](https://github.com/michaelklishin/quartzite)
@@ -16,13 +16,12 @@ I have found many scheduling libraries for clojure
   - [clj-cronlike](https://github.com/kognate/clj-cronlike)
   - [at-at](https://github.com/overtone/at-at)
 
-However, none of them are suited to what I needed to do. The first three follow the cron convention. The "task" (also called a "job") can only be scheduled at intervals of one minute apart. The last scheduling library [at-at](https://github.com/overtone/at-at) had milli-second resolution, but was limited in the number of threads that was used. It was only good at looking after one task that did not overlap between calls.
+However, none of them are suited to what I needed to do. The first three all follow the cron convention. The "task" (also called a "job") can only be scheduled at whole minute intervals. The last scheduling library [at-at](https://github.com/overtone/at-at) had milli-second resolution, but was limited in the number of threads that was used. It was only good for looking after a single task that did not overlap between calls.
 
 I needed something that
   - started scheduled tasks with a per-second interval having high system-time accuracy.
   - would spawn as many threads as needed, so that tasks started at earlier intervals could exist along side tasks started at later intervals.
-  - an additional design requirement required that task handlers are passed a date-time object, so that the task itself is aware of the time that it was started
-
+  - an additional design requirement required that task handlers are passed a date-time object, so that the handler itself is aware of the time when it was initiated.
 
 ## Usage
     (require '[cronj.core :as cj])
