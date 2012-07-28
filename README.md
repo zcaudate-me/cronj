@@ -46,6 +46,26 @@ I needed something that
                  :handler #'println
                  :schedule "/5  9,10  * 5 * 6-8 2012-2020"})
 
+#### launching shell commands
+
+Shell commands can be launched using the alternative map description:
+
+    (cj/add-service {:id "print-date-sh"
+                 :desc "prints out the date every 5 seconds from the shell's 'date' function"
+                 :cmd "date"
+                 :schedule "/5 * * * * * *"})
+
+An output function can be added, which will be passed a `datetime` value and the output map of the finished
+shell command. See source code of `sh-print` for the simplest example usage.
+
+    (cj/add-service {:id "print-date-sh-2"
+                 :desc "prints out the date every 5 seconds from the shell's 'date' function"
+                 :cmd "date"
+                 :cmd-fn (fn [dtime output] (println (format "At %s, command 'date' output the value %s"
+                                                             (str dtime)
+                                                             (:out output))))
+                 :schedule "/5 * * * * * *"})
+
 ## Todo:
 #### commandline usage for single shell programs
 

@@ -37,7 +37,8 @@
 
 
 (ns cronj.core
-  (:use [clojure.string :only [split join]])
+  (:use [clojure.string :only [split join]]
+        [clojure.java.shell :only [sh]])
   (:require [clj-time.core :as t]
             [clj-time.local :as lt]))
 
@@ -47,6 +48,8 @@
                               :interval nil}))
 
 (def !required-service-keys [:id :desc :handler :schedule])
+(def !required-shell-service-keys [:id :desc :cmd :schedule])
+
 (def !optional-service-map {:enabled true})
 (def !default-interval 50) ;;ms
 
@@ -103,6 +106,10 @@
   (every? true?
           (map #(contains? service %) !required-service-keys)))
 
+(defn- is-shell-service? [service]
+  (every? true?
+          (map #(contains? service %) !required-shell-service-keys)))
+
 (defn service-exists? [service-id]
   (contains? @*service-list* service-id))
 
@@ -117,20 +124,40 @@
 (defn list-all-service-ids []
   (keys @*service-list*))
 
-(defn add-service [service]
-  (if (is-service? service)
-    (let [sch (:schedule service)
-          adj (assoc service :schedule-arr (parse-str sch))
-          id  (:id adj)]
-      (if (service-exists? id)
-        (throw (Exception. "There is already a service with the same id"))
-        (dosync
-         (alter *service-list* assoc (:id adj)
-                (atom (into !optional-service-map adj))))))
-    (throw (Exception. "The service is not a valid service"))))
+(defn sh-handler [cmd output-fn]
+  (fn [dtime]
+    (output-fn dtime
+               (sh "bash" "-c" cmd))))
 
-(defn add-services [& services]
-  (doseq [s services] (add-service s)))
+(defn sh-print [dtime output]
+  (println (:out output)))
+
+(defn add-service! [service]
+  (let [sch     (:schedule service)
+        adj     (assoc service :schedule-arr (parse-str sch))
+        id      (:id adj)
+        add-fn  #(dosync
+                  (alter *service-list* assoc id
+                         (atom (into !optional-service-map %))))]
+    (cond (is-service? adj)
+          (add-fn service)
+
+          (is-shell-service? adj)
+          (add-fn (assoc adj :handler
+                         (sh-handler (:cmd adj)
+                                     (or (:cmd-fn adj)
+                                         sh-print))))
+
+          :else
+          (throw (Exception. "The service map is not a valid." service)))))
+
+(defn add-service [service]
+    (if (service-exists? (:id service))
+      (throw (Exception. "There is already a service with the same id"))
+      (add-service! service)))
+
+(defn add-services! [& services]
+  (doseq [s services] (add-service! s)))
 
 (defn remove-service [service-id]
   (dosync
