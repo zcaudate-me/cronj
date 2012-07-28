@@ -15,15 +15,22 @@ I have found many scheduling libraries for clojure
   - [cron4j](http://www.sauronsoftware.it/projects/cron4j)
   - [clj-cronlike](https://github.com/kognate/clj-cronlike)
   - [at-at](https://github.com/overtone/at-at)
+  - [monotony](https://github.com/aredington/monotony)
 
-However, none of them are suited to what I needed to do. The first three all follow the cron convention. The "task" (also called a "job") can only be scheduled at whole minute intervals. The last scheduling library [at-at](https://github.com/overtone/at-at) had milli-second resolution, but was limited in the number of threads that was used. It was only good for looking after a single task that did not overlap between calls.
+However, none of them are suited to what I needed to do. The first three all follow the cron convention. The "task" (also called a "job") can only be scheduled at whole minute intervals. The last scheduling library [at-at](https://github.com/overtone/at-at) had milli-second resolution, but was limited in the number of threads that was used. It was only good for looking after a single task that did not overlap between calls. [monotony](https://github.com/aredington/monotony) was... well... monotony uses core.logic, which is something that I am yet to understand.
 
 I needed something that
   - started scheduled tasks with a per-second interval having high system-time accuracy.
   - would spawn as many threads as needed, so that tasks started at earlier intervals could exist along side tasks started at later intervals.
   - an additional design requirement required that task handlers are passed a date-time object, so that the handler itself is aware of the time when it was initiated.
 
-## Usage
+## Installation:
+ 
+In project.clj, add to dependencies:
+     
+     [cronj "0.1.0"]
+
+## Usage:
     (require '[cronj.core :as cj])
     (cj/add-task {:id 0 :desc 0 :handler #(println "job 0:" %) :schedule "/5 * * * * * *"}) ;; every 5 seconds
     (cj/add-task {:id 1 :desc 1 :handler #(println "job 1:" %) :schedule "/3 * * * * * *"}) ;; every 3 seconds
@@ -32,7 +39,7 @@ I needed something that
     (cj/stop!)
 
 
-#### More cron-like usage
+#### More cron-like usage:
 
     (cj/add-task {:id "print-date"
                  :desc "prints out the date every 5 seconds"
