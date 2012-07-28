@@ -2,6 +2,8 @@
 
 This is a cron-inspired task-scheduling library.
 
+## Idea
+
 So the basic idea is the concept of a "task" that have the following attributes:
 
       - "id" and "description" for meta description
@@ -9,6 +11,8 @@ So the basic idea is the concept of a "task" that have the following attributes:
       - "handler", the actual procedure that provides the functionality for a task
 
 Tasks can be added and removed on the fly through the `cronj` library interface and `cronj` will keep an eye out on the time. Once a task has been scheduled to start, `cronj` will launch the task-handler in another thread.
+
+## Motivation
 
 I have found many scheduling libraries for clojure
   - [quartzite](https://github.com/michaelklishin/quartzite)
