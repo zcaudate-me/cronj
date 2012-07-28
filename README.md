@@ -35,6 +35,11 @@ I needed something that
   - an additional design requirement required that task handlers are passed a date-time object, so that the handler itself is aware of the time when it was initiated.
 
 ## Usage:
+
+#### Basic Usage
+
+`add-task`, `start!`, and `stop!` are really all the commands need to get going:
+
     (require '[cronj.core :as cj])
 
     (cj/add-task {:id 0   :desc 0 
@@ -53,9 +58,11 @@ I needed something that
     
     (cj/stop!)
 
+#### Task removal
+    (cj/remove-task 0)    ;; removes task with :id of 0
     (cj/remove-all-tasks) ;; cleans out the task list
 
-### task scheduling control
+#### Scheduling and Control
 
 Tasks can be added and removed whilst cronj is running:
 
@@ -78,13 +85,16 @@ Tasks can be added and removed whilst cronj is running:
     ;; actually, this task is useless
     
     (cj/remove-task 1)
-    
-tasks can be individually enabled and disabled:
+
+#### Enable/Disable
+
+Tasks can be individually enabled and disabled:
 
     (cj/disable-task 0)   ;;=> disables the task with :id 0
     (cj/enable-task 0)    ;;=> enables the task again
     (cj/toggle-task 0)    ;;=> toggles the task
     
+#### Task List
 similarily, most operations can also be done on the entire list:
 
     (cj/list-all-tasks)
