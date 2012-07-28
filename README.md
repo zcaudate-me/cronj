@@ -29,7 +29,7 @@ So the basic idea is the concept of a "task" that has the following attributes:
       - "schedule", to specify when the task should run
       - "handler", the actual procedure that provides the functionality for a task
 
-Tasks can be added and removed on the fly through the `cronj` library interface and `cronj` will keep an eye out on the time. At the time a task has been scheduled to start, `cronj` will launch the task handler in another thread.
+Tasks can be added and removed on the fly through the `cronj` library interface and the library will then keep an eye out on the time. At the correct time that a task has been scheduled to start, the task handler will be launched in another thread.
 
                                         task-list
                 __...--+----+----+----+----+----+----+----+----+----+----+----+----+
