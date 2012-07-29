@@ -148,7 +148,7 @@ task handlers can also be updated:
                  :handler #'println
                  :schedule "/5 * * * * * *"})
                  
-   (cj/add-task! {:id "print-date"
+    (cj/add-task! {:id "print-date"
                 :desc "prints out the date every 5 seconds between 32 and 60 seconds"
                 :handler #'println
                 :schedule "32-60/5 * * * * * *"})
