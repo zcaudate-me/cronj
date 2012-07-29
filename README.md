@@ -1,6 +1,7 @@
 ## cronj
 
 This is *another* cron-inspired task-scheduling library. I have found many scheduling libraries for clojure:
+
   - [quartzite](https://github.com/michaelklishin/quartzite)
   - [cron4j](http://www.sauronsoftware.it/projects/cron4j)
   - [clj-cronlike](https://github.com/kognate/clj-cronlike)
@@ -11,7 +12,7 @@ The first three all follow the cron convention. The "task" (also called a "job")
 
 I needed something that
 
-  - started scheduled tasks with a per-second interval having high system-time accuracy.
+  - started scheduled tasks with a per-second interval having high system-time accuracy without wasting system resourcs.
   - would spawn as many threads as needed, so that tasks started at earlier intervals could exist along side tasks started at later intervals.
   - an additional design requirement required that task handlers are passed a date-time object, so that the handler itself is aware of the time when it was initiated.
 
@@ -57,10 +58,10 @@ Tasks can be added and removed on the fly through the `cronj` library interface 
        |  :month  [:*]           |     X      cronj      X            cron methods
        |  :year   [:*]           |    X                   X   +-------------------------+
        +-------------------------+    X     :thread       X   |                         |
-                                      X     :last-run     X   |  +running?   +start!    |
-          cronj function               X    :interval    X    |  +stopped?   +stop!     |
-          --------------                XX             XX     |  +-interval  +-thread   |
-         At every interval                XX         XX       |  +-last-run             |
+                                      X     :last-run     X   |  running?     start!    |
+          cronj function               X    :interval    X    |  stopped?     stop!     |
+          --------------                XX             XX     |  $-interval   $-thread  |
+         At every second.                 XX         XX       |  $-last-run             |
          looks at task                      XXXXXXXXX         |                         |
          list and triggers                                    +-------------------------+
          handler functions
@@ -76,18 +77,12 @@ Tasks can be added and removed on the fly through the `cronj` library interface 
 
     (require '[cronj.core :as cj])
 
-    (cj/add-task {:id 0   :desc 0 
-                  :handler #(println "job 0:" %) 
-                  :schedule "/5 * * * * * *"}) ;; every 5 seconds
-    (cj/add-task {:id 1   :desc 1 
-                  :handler #(println "job 1:" %) 
-                  :schedule "/3 * * * * * *"}) ;; every 3 seconds
+    (cj/add-task {:id 0   :desc 0 :handler #(println "job 0:" %) :schedule "/5 * * * * * *"}) ;; every 5 seconds
+    (cj/add-task {:id 1   :desc 1 :handler #(println "job 1:" %) :schedule "/3 * * * * * *"}) ;; every 3 seconds
 
-    (cj/start!) ;; default interval to check the current time is 50ms, 
-                ;; try (cj/start! 20) for an interval of 20ms
+    (cj/start!)
 
     ;; wait for outputs ......
-
     ;; get bored
     
     (cj/stop!)
@@ -98,25 +93,24 @@ Tasks can be added and removed on the fly through the `cronj` library interface 
 
 #### Scheduling and Control
 
-Tasks can be added and removed whilst cronj is running:
+Tasks can be added and removed whilst cronj is running. `add-task!` adds the task to the task list
+without throwing an exception if the task id is already present:
 
     ;; following on from the previous section
 
     (cj/start!)
     
-    ;; cronj is running 
+    ;; cronj is running....
 
-    (cj/add-task {:id 0   :desc 0 
-                  :handler #(println "job 0:" %) 
-                  :schedule "/5 * * * * * *"}) ;; every 5 seconds
+    (cj/add-task! {:id 0 :desc 0 :handler #(println "job 0:" %) 
+                   :schedule "/5 * * * * * *"}) ;; every 5 seconds
     
     ;; wait a bit and add another task
     
-    (cj/add-task {:id 1   :desc 1 
-        :handler #(println "job 1:" %) 
-        :schedule "/3 * * * * * *"}) ;; every 3 seconds    
+    (cj/add-task! {:id 1 :desc 1 :handler #(println "job 1:" %) 
+                   :schedule "/3 * * * * * *"}) ;; every 3 seconds    
 
-    ;; actually, this task is useless
+    ;; actually, task 1 is useless, lets remove it
     
     (cj/remove-task 1)
 
@@ -149,23 +143,29 @@ task handlers can also be updated:
 
 ##### More cron-like usage:
 
-    (cj/add-task {:id "print-date"
+    (cj/add-task! {:id "print-date"
                  :desc "prints out the date every 5 seconds"
                  :handler #'println
                  :schedule "/5 * * * * * *"})
+                 
+   (cj/add-task! {:id "print-date"
+                :desc "prints out the date every 5 seconds between 32 and 60 seconds"
+                :handler #'println
+                :schedule "32-60/5 * * * * * *"})
 
-    (cj/add-task {:id "print-date"
+
+    (cj/add-task! {:id "print-date"
                  :desc "prints out the date every 5 seconds on the
                         9th and 10th minute of every hour on every Friday
                         from June to August between the year 2012 to 2020"
                  :handler #'println
                  :schedule "/5  9,10  * 5 * 6-8 2012-2020"})
-
+                 
 ##### launching shell commands
 
 Shell commands can be launched using the alternative map description:
 
-    (cj/add-task {:id "print-date-sh"
+    (cj/add-task! {:id "print-date-sh"
                  :desc "prints out the date every 5 seconds from the shell's 'date' function"
                  :cmd "date"
                  :schedule "/5 * * * * * *"})
@@ -173,7 +173,7 @@ Shell commands can be launched using the alternative map description:
 An output function can be added, which will be passed a `datetime` value and the output map of the finished
 shell command. See source code of `sh-print` for the simplest example usage.
 
-    (cj/add-task {:id "print-date-sh-2"
+    (cj/add-task! {:id "print-date-sh-2"
                  :desc "prints out the date every 5 seconds from the shell's 'date' function"
                  :cmd "date"
                  :cmd-fn (fn [dtime output] (println (format "At %s, command 'date' output the value %s"
@@ -182,10 +182,13 @@ shell command. See source code of `sh-print` for the simplest example usage.
                  :schedule "/5 * * * * * *"})
 
 
-## Todo:
+## Todos and improvements:
 ##### commandline usage for single shell programs
 
     java -jar cronj.jar --task "echo $(date)" --schedule "/5 * * * * * *"
+
+##### other suggestions
+Please fill free to suggest any features or changes that may improve the quality of the code.
 
 ## License
 Copyright © 2012 Chris Zheng
