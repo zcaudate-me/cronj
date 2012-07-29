@@ -51,7 +51,7 @@
 (def !required-shell-task-keys [:id :desc :cmd :schedule])
 
 (def !optional-task-map {:enabled true})
-(def !default-interval 50) ;;ms
+(def !default-interval 1) ;;ms
 
 
  ;; There are 2 different representations of cronj schedule data:
@@ -140,7 +140,7 @@
                   (alter *task-list* assoc id
                          (atom (into !optional-task-map %))))]
     (cond (is-task? adj)
-          (add-fn task)
+          (add-fn adj)
 
           (is-shell-task? adj)
           (add-fn (assoc adj :handler
@@ -268,16 +268,34 @@
   (every? true?
           (map match-array-entry? t-arr c-arr)))
 
-(defn- cronj-task-fn [dtime]
-  (let [lr (:last-run @*cronj*)
-        nr (to-time-array dtime)]
-    (if (or (nil? lr) (not= lr nr))
+(defn $-thread [] (:thread @*cronj*))
+(defn $-last-run [] (:last-run @*cronj*))
+(defn $-interval
+  ([] (:interval @*cronj*))
+  ([interval] (swap! *cronj* assoc :interval interval)))
+
+(defn- cronj-fn [dtime darray]
+  (doseq [task (list-all-tasks)]
+    (if (match-array? darray (:schedule-arr task))
+      (future (run-task* (:id task) dtime)))))
+
+(defn- cronj-loop []
+  (let [last-arr    ($-last-run)
+        current-time (t/now)
+        current-arr  (to-time-array current-time)]
+    (if (or (nil? last-arr) (not= last-arr current-arr))
       (do
-        (swap! *cronj* assoc :last-run nr)
-        ;;(println nr) ;; FOR DEBUGGING
-        (doseq [task (list-all-tasks)]
-          (if (match-array? nr (:schedule-arr task))
-            (future (run-task* (:id task) dtime))))))))
+        (swap! *cronj* assoc :last-run current-arr)
+        (cronj-fn current-time current-arr))
+      (let [interval ($-interval)
+            sleep-time (- 1000
+                          (t/milli current-time)
+                          interval)]
+        (if (< 0 sleep-time)
+          (Thread/sleep sleep-time)
+          (Thread/sleep interval))))
+    (recur)))
+
 
 (defn stopped?
   ([] (stopped? @*cronj*))
@@ -289,17 +307,6 @@
            (future-cancelled? x)))))
 
 (def running? (comp not stopped?))
-
-(defn $-thread [] (:thread @*cronj*))
-(defn $-last-run [] (:last-run @*cronj*))
-(defn $-interval
-  ([] (:interval @*cronj*))
-  ([interval] (swap! *cronj* assoc :interval interval)))
-
-(defn- cronj-loop []
-  (Thread/sleep (:interval @*cronj*))
-  (cronj-task-fn (t/now))
-  (recur))
 
 (defn start!
   ([] (start! !default-interval))
