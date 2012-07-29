@@ -30,7 +30,7 @@ So the basic idea is the concept of a "task" that has the following attributes:
       - "schedule", to specify when the task should run
       - "handler", the actual procedure that provides the functionality for a task
 
-Tasks can be added and removed on the fly through the `cronj` library interface and the library will then keep an eye out on the time. At the correct time that a task has been scheduled to start, the task handler will be launched in another thread.
+Tasks can be added and removed on the fly through the `cronj` library interface and the library will then keep an eye out on the time. At the correct time that a task has been scheduled to start, the task handler will be launched in another thread. The actual polling loop is quite efficient and will only poll a maximum of twice every second with a 1ms timing error. Future improvements to the loop will hope to preempt the time that tasks should start and sleep until it is necessary to wake up.
 
                                         task-list
                 __...--+----+----+----+----+----+----+----+----+----+----+----+----+
