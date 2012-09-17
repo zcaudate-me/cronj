@@ -61,6 +61,26 @@ Additional arguments can be added to the handler through the args option and a f
     ;; stop outputs
     (cj/stop!)
 
+    
+### More Examples
+
+    (cj/schedule-task! {:id "print-date-1"
+             :desc "prints out the date every 5 seconds"
+             :handler #'println
+             :tab "/5 * * * * * *"})
+
+    (cj/schedule-task! {:id "print-date-2"
+            :desc "prints out the date every 5 seconds between 32 and 60 seconds"
+            :handler #'println
+            :tab "32-60/5 * * * * * *"})
+
+    (cj/schedule-task! {:id "print-date-3"
+             :desc "prints out the date every 5 seconds on the
+                    9th aand 10th minute of every hour on every Friday
+                    from June to August between the year 2012 to 2020"
+             :handler #'println
+             :tab "/5  9,10  * 5 * 6-8 2012-2020"}) 
+
 
 Thats really it... now write your own!
 
@@ -80,41 +100,41 @@ Cronj is seperated into three basic concepts:
 - A Timekeeper to keep the time and trigger tasks at the time that it is scheduled to run.
 
 <pre>
-                                  timesheet
-          __...--+----+----+----+----+----+----+----+----+----+----+----+----+
- _..---'""      _|.--"|    |    |    |    |    |    |    |    |    |    |    |
-+-------------+'_+----+----+----+----+----+----+----+----+----+----+----+----+
-| task        |-     /                                              |
-|             |     /                     X                         |
-|    :id      |    /                    XXXXX              timesheet  methods
-|    :desc    |   /                    XXXXXXX          +-------------------------+
-|  ++:handler |  /                    XXXXXXXXX           contains-task? [id]
-| +++:tab       /                        XXX              select-task    [id]
-| || :enabled |/                         XXX              enable-task!   [id]
-+-++----------+                          XXX              disable-task!  [id]
-  ||  ,-.                                XXX              trigger-task!  [id]
-  |+-(   ) fn[dt & args]                 XXX              list-running-for-task  [id]
-  |   `-'                                XXX              kill-all-running-for-task! [id]
- +-------------------------+             XXX              kill-running-for-task! [id tid]
- |  "* 8 /2 7-9 2,3 * *"   |             XXX
- +-------------------------+             XXX              list-all-tasks []
- |  :sec    [:*]           |             XXX              load-tasks!    [v]
- |  :min    [:# 8]         |             XXX              unschedule-all-tasks! []
- |  :hour   [:| 2]         |          XXXXXXXXX           schedule-task!   [id]
- |  :dayw   [:- 7 9]       |        XX         XX         unschedule-task! [id]
- |  :daym   [:# 2] [:# 3]  |      XX             XX
- |  :month  [:*]           |     X      cronj      X
- |  :year   [:*]           |    X                   X
- +-------------------------+    X     :thread       X
-                                X     :last-check   X        timekeeper methods
-    cronj function               X    :interval    X    +-------------------------+
-    --------------                XX             XX        running?     start!
-   At every second.                 XX         XX          stopped?     stop!
-   looks at task                      XXXXXXXXX            restart!
-   list and triggers
-   handler functions
-   for each enabled
-   task.
+                                          timesheet
+                  __...--+----+----+----+----+----+----+----+----+----+----+----+----+
+         _..---'""      _|.--"|    |    |    |    |    |    |    |    |    |    |    |
+        +-------------+'_+----+----+----+----+----+----+----+----+----+----+----+----+
+        | task        |-     /                                              |
+        |             |     /                     X                         |
+        |    :id      |    /                    XXXXX              timesheet  methods
+        |    :desc    |   /                    XXXXXXX          +-------------------------+
+        |  ++:handler |  /                    XXXXXXXXX           contains-task? [id]
+        | +++:tab       /                        XXX              select-task    [id]
+        | || :enabled |/                         XXX              enable-task!   [id]
+        +-++----------+                          XXX              disable-task!  [id]
+          ||  ,-.                                XXX              trigger-task!  [id]
+          |+-(   ) fn[dt & args]                 XXX              list-running-for-task  [id]
+          |   `-'                                XXX              kill-all-running-for-task! [id]
+         +-------------------------+             XXX              kill-running-for-task! [id tid]
+         |  "* 8 /2 7-9 2,3 * *"   |             XXX
+         +-------------------------+             XXX              list-all-tasks []
+         |  :sec    [:*]           |             XXX              load-tasks!    [v]
+         |  :min    [:# 8]         |             XXX              unschedule-all-tasks! []
+         |  :hour   [:| 2]         |          XXXXXXXXX           schedule-task!   [id]
+         |  :dayw   [:- 7 9]       |        XX         XX         unschedule-task! [id]
+         |  :daym   [:# 2] [:# 3]  |      XX             XX
+         |  :month  [:*]           |     X      cronj      X
+         |  :year   [:*]           |    X                   X
+         +-------------------------+    X     :thread       X
+                                        X     :last-check   X        timekeeper methods
+            cronj function               X    :interval    X    +-------------------------+
+            --------------                XX             XX        running?     start!
+           At every second.                 XX         XX          stopped?     stop!
+           looks at task                      XXXXXXXXX            restart!
+           list and triggers
+           handler functions
+           for each enabled
+           task.
 </pre>
 
 ### Tasks:
@@ -133,37 +153,42 @@ A task does not have a concept of when it will run. It only responds when it is 
                          (fn [_] (println "I Last for 10 seconds")  
                          (Thread/sleep 10000))))
 
-And triggered using:
+`task-10s` references a map:
+
+    (println job-10s)
+    ;; => {:enabled #[Atom@5148bd9e: true], :running [DynaRec], :args {}, :last-called #[Atom@7e98f9c2: nil], :last-successful #[Atom@6d35707c: nil], :id :10, :desc 10s, :handler #user$fn}                        
+
+It can be triggered using:
 
     (ct/exec! task-10s *id*)
                                          
-where *id* has to be a unique identifier. In this case, we will use the the datetime. So when:
+where *id* has to be a unique identifier. In this case, and also in the case for cronj, we will use the the datetime. `running` lists the instances of the task that are still running:
 
     (ct/exec! task-10s (t/now))
     ;; => I Last for 10 seconds
-    (ct/running task-10s) ;; within ten seconds
+    (ct/running task-10s) ;; within ten seconds of the exec! call
     ;; => (#<DateTime 2012-09-17T05:19:36.223Z>)
 
     
 ### Long Running Tasks
     
-A task may be scheduled to run every 30 seconds, but may take up to a minute to finish. In this case, the multiple threads will be spawned for multiple calls. Below is an example:
+A task may be scheduled to run every 30 seconds, but may take up to a minute to finish. In this case, the multiple threads will be spawned and will be tracked. Below is an example:
 
-    (ct/exec! task-10s (t/now))
-    (ct/exec! task-10s (t/now))
-    (ct/exec! task-10s (t/now))
+    (ct/exec! task-10s :id-1)
+    (ct/exec! task-10s :id-2)
+    (ct/exec! task-10s :id-3)
+    (ct/exec! task-10s :id-4)
     (ct/running task-10s) ;; within ten seconds of the three
-    ;; => (#DateTime 2012-09-17T05:21:19.967Z #DateTime 2012-09-17T05:21:21.111Z #DateTime 2012-09-17T05:21:21.949Z)
+    ;; => (:id-1 :id-2 :id-3 :id-4)
     
     ;; and then they can be killed individually or together:
-    (ct/kill-all task-10s)
+    (ct/kill! task-10s :id-4)
+    (ct/running task-10s)
+    ;; => (:id-1 :id-2 :id-3)
+
+    (ct/kill-all! task-10s)
     (ct/running task-10s)
     ;; => ()
-
-The symbol `task-10s` actually references a map:
-
-    (println job-10s)
-    ;; => {:enabled #[Atom@5148bd9e: true], :running [DynaRec], :args {}, :last-called #[Atom@7e98f9c2: nil], :last-successful #[Atom@6d35707c: nil], :id :10, :desc 10s, :handler #user$fn}
 
 The complete map attributes are described:
 
@@ -175,27 +200,6 @@ The complete map attributes are described:
     :running           All the instances of the task that are still running
     :last-called       The id of the last instance called using `exec!`
     :last-successful   The id of the last instance that finished normally.
-    
-   
-### More Examples
-
-    (cj/schedule-task! {:id "print-date-1"
-             :desc "prints out the date every 5 seconds"
-             :handler #'println
-             :tab "/5 * * * * * *"})
-
-    (cj/schedule-task! {:id "print-date-2"
-            :desc "prints out the date every 5 seconds between 32 and 60 seconds"
-            :handler #'println
-            :tab "32-60/5 * * * * * *"})
-
-
-    (cj/schedule-task! {:id "print-date-3"
-             :desc "prints out the date every 5 seconds on the
-                    9th aand 10th minute of every hour on every Friday
-                    from June to August between the year 2012 to 2020"
-             :handler #'println
-             :tab "/5  9,10  * 5 * 6-8 2012-2020"}) 
 
 
 ### Methods
@@ -234,4 +238,10 @@ Advanced (not used except in unsual circumstances)
     new-cronj!! []
 
 ## TODO:
-- Finish Tests
+
+Finish Tests
+- Tab (Done)
+- Task (More use cases)
+- Timesheet (More use cases)
+- Timekeeper 
+- Core (More use cases)
