@@ -47,7 +47,7 @@ In project.clj, add to dependencies:
 ### Arguments
 Additional arguments can be added to the handler through the args option and a function that is takes the arguments
 
-    (cj/unschedule-all-tasks)
+    (cj/unschedule-all-tasks!)
     (cj/schedule-task! {:id 3 :desc 3 
                         :handler (fn [dt & {:keys [task-name]}] (println task-name ": " dt)) 
                         :tab "/2 * * * * * *"
@@ -73,56 +73,56 @@ Tasks can be added and removed on the fly through the `cronj` library interface 
 
 Cronj is seperated into three basic concepts:
 
-- Tasks (are records that provide information about the task)
+- Tasks are records that provide information about the task and keeps track of the running instances of the task.
       
-- A Timesheet (to strictly schedule and unschedule tasks according to a `tab` schedule as well as as provide functionality to easily manipulate groups of tasks.)
+- A Timesheet to strictly schedule and unschedule tasks according to a `tab` schedule as well as as provide functionality to easily manipulate groups of tasks.
       
-- A Timekeeper (keeps the time as triggers tasks at the interval that it is scheduled to run)
+- A Timekeeper to keep the time and trigger tasks at the time that it is scheduled to run.
 
-                                            timesheet
-                    __...--+----+----+----+----+----+----+----+----+----+----+----+----+
-           _..---'""      _|.--"|    |    |    |    |    |    |    |    |    |    |    |
-          +-------------+'_+----+----+----+----+----+----+----+----+----+----+----+----+
-          | task        |-     /                                              |
-          |             |     /                     X                         |
-          |    :id      |    /                    XXXXX              timesheet  methods
-          |    :desc    |   /                    XXXXXXX          +-------------------------+
-          |  ++:handler |  /                    XXXXXXXXX           contains-task? [id]
-          | +++:tab       /                        XXX              select-task    [id]
-          | || :enabled |/                         XXX              enable-task!   [id]
-          +-++----------+                          XXX              disable-task!  [id]
-            ||  ,-.                                XXX              trigger-task!  [id]
-            |+-(   ) fn[dt & args]                 XXX              list-running-for-task  [id]
-            |   `-'                                XXX              kill-all-running-for-task! [id]
-           +-------------------------+             XXX              kill-running-for-task! [id tid]
-           |  "* 8 /2 7-9 2,3 * *"   |             XXX
-           +-------------------------+             XXX              list-all-tasks []
-           |  :sec    [:*]           |             XXX              load-tasks!    [v]
-           |  :min    [:# 8]         |             XXX              unschedule-all-tasks! []
-           |  :hour   [:| 2]         |          XXXXXXXXX           schedule-task!   [id]
-           |  :dayw   [:- 7 9]       |        XX         XX         unschedule-task! [id]
-           |  :daym   [:# 2] [:# 3]  |      XX             XX
-           |  :month  [:*]           |     X      cronj      X
-           |  :year   [:*]           |    X                   X
-           +-------------------------+    X     :thread       X
-                                          X     :last-check   X        timekeeper methods
-              cronj function               X    :interval    X    +-------------------------+
-              --------------                XX             XX        running?     start!
-             At every second.                 XX         XX          stopped?     stop!
-             looks at task                      XXXXXXXXX            restart!
-             list and triggers
-             handler functions
-             for each enabled
-             task.
+                                      timesheet
+              __...--+----+----+----+----+----+----+----+----+----+----+----+----+
+     _..---'""      _|.--"|    |    |    |    |    |    |    |    |    |    |    |
+    +-------------+'_+----+----+----+----+----+----+----+----+----+----+----+----+
+    | task        |-     /                                              |
+    |             |     /                     X                         |
+    |    :id      |    /                    XXXXX              timesheet  methods
+    |    :desc    |   /                    XXXXXXX          +-------------------------+
+    |  ++:handler |  /                    XXXXXXXXX           contains-task? [id]
+    | +++:tab       /                        XXX              select-task    [id]
+    | || :enabled |/                         XXX              enable-task!   [id]
+    +-++----------+                          XXX              disable-task!  [id]
+      ||  ,-.                                XXX              trigger-task!  [id]
+      |+-(   ) fn[dt & args]                 XXX              list-running-for-task  [id]
+      |   `-'                                XXX              kill-all-running-for-task! [id]
+     +-------------------------+             XXX              kill-running-for-task! [id tid]
+     |  "* 8 /2 7-9 2,3 * *"   |             XXX
+     +-------------------------+             XXX              list-all-tasks []
+     |  :sec    [:*]           |             XXX              load-tasks!    [v]
+     |  :min    [:# 8]         |             XXX              unschedule-all-tasks! []
+     |  :hour   [:| 2]         |          XXXXXXXXX           schedule-task!   [id]
+     |  :dayw   [:- 7 9]       |        XX         XX         unschedule-task! [id]
+     |  :daym   [:# 2] [:# 3]  |      XX             XX
+     |  :month  [:*]           |     X      cronj      X
+     |  :year   [:*]           |    X                   X
+     +-------------------------+    X     :thread       X
+                                    X     :last-check   X        timekeeper methods
+        cronj function               X    :interval    X    +-------------------------+
+        --------------                XX             XX        running?     start!
+       At every second.                 XX         XX          stopped?     stop!
+       looks at task                      XXXXXXXXX            restart!
+       list and triggers
+       handler functions
+       for each enabled
+       task.
 
 
 ### Tasks:
 
 A "task" has the following attributes:
 
-      - "id" and "desc" for meta description of the task
-      - "handler", the actual procedure that provides the functionality for a task
-      - arguments to the handler can be passed via the optional "args" attribute
+    - "id" and "desc" for meta description of the task
+    - "handler", the actual procedure that provides the functionality for a task
+    - arguments to the handler can be passed via the optional "args" attribute
 
 A task does not have a concept of when it will run. It only responds when it is asked to run and will keep track of all the instances of the task that are running. It is defined as follows:
 
@@ -178,18 +178,18 @@ The complete map attributes are described:
    
 ### More Examples
 
-    (cj/schedule-task! {:id "print-date"
+    (cj/schedule-task! {:id "print-date-1"
              :desc "prints out the date every 5 seconds"
              :handler #'println
              :tab "/5 * * * * * *"})
 
-    (cj/schedule-task! {:id "print-date"
+    (cj/schedule-task! {:id "print-date-2"
             :desc "prints out the date every 5 seconds between 32 and 60 seconds"
             :handler #'println
             :tab "32-60/5 * * * * * *"})
 
 
-    (cj/schedule-task! {:id "print-date"
+    (cj/schedule-task! {:id "print-date-3"
              :desc "prints out the date every 5 seconds on the
                     9th aand 10th minute of every hour on every Friday
                     from June to August between the year 2012 to 2020"
