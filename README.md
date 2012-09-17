@@ -79,42 +79,43 @@ Cronj is seperated into three basic concepts:
       
 - A Timekeeper to keep the time and trigger tasks at the time that it is scheduled to run.
 
-                                      timesheet
-              __...--+----+----+----+----+----+----+----+----+----+----+----+----+
-     _..---'""      _|.--"|    |    |    |    |    |    |    |    |    |    |    |
-    +-------------+'_+----+----+----+----+----+----+----+----+----+----+----+----+
-    | task        |-     /                                              |
-    |             |     /                     X                         |
-    |    :id      |    /                    XXXXX              timesheet  methods
-    |    :desc    |   /                    XXXXXXX          +-------------------------+
-    |  ++:handler |  /                    XXXXXXXXX           contains-task? [id]
-    | +++:tab       /                        XXX              select-task    [id]
-    | || :enabled |/                         XXX              enable-task!   [id]
-    +-++----------+                          XXX              disable-task!  [id]
-      ||  ,-.                                XXX              trigger-task!  [id]
-      |+-(   ) fn[dt & args]                 XXX              list-running-for-task  [id]
-      |   `-'                                XXX              kill-all-running-for-task! [id]
-     +-------------------------+             XXX              kill-running-for-task! [id tid]
-     |  "* 8 /2 7-9 2,3 * *"   |             XXX
-     +-------------------------+             XXX              list-all-tasks []
-     |  :sec    [:*]           |             XXX              load-tasks!    [v]
-     |  :min    [:# 8]         |             XXX              unschedule-all-tasks! []
-     |  :hour   [:| 2]         |          XXXXXXXXX           schedule-task!   [id]
-     |  :dayw   [:- 7 9]       |        XX         XX         unschedule-task! [id]
-     |  :daym   [:# 2] [:# 3]  |      XX             XX
-     |  :month  [:*]           |     X      cronj      X
-     |  :year   [:*]           |    X                   X
-     +-------------------------+    X     :thread       X
-                                    X     :last-check   X        timekeeper methods
-        cronj function               X    :interval    X    +-------------------------+
-        --------------                XX             XX        running?     start!
-       At every second.                 XX         XX          stopped?     stop!
-       looks at task                      XXXXXXXXX            restart!
-       list and triggers
-       handler functions
-       for each enabled
-       task.
-
+<pre>
+                                  timesheet
+          __...--+----+----+----+----+----+----+----+----+----+----+----+----+
+ _..---'""      _|.--"|    |    |    |    |    |    |    |    |    |    |    |
++-------------+'_+----+----+----+----+----+----+----+----+----+----+----+----+
+| task        |-     /                                              |
+|             |     /                     X                         |
+|    :id      |    /                    XXXXX              timesheet  methods
+|    :desc    |   /                    XXXXXXX          +-------------------------+
+|  ++:handler |  /                    XXXXXXXXX           contains-task? [id]
+| +++:tab       /                        XXX              select-task    [id]
+| || :enabled |/                         XXX              enable-task!   [id]
++-++----------+                          XXX              disable-task!  [id]
+  ||  ,-.                                XXX              trigger-task!  [id]
+  |+-(   ) fn[dt & args]                 XXX              list-running-for-task  [id]
+  |   `-'                                XXX              kill-all-running-for-task! [id]
+ +-------------------------+             XXX              kill-running-for-task! [id tid]
+ |  "* 8 /2 7-9 2,3 * *"   |             XXX
+ +-------------------------+             XXX              list-all-tasks []
+ |  :sec    [:*]           |             XXX              load-tasks!    [v]
+ |  :min    [:# 8]         |             XXX              unschedule-all-tasks! []
+ |  :hour   [:| 2]         |          XXXXXXXXX           schedule-task!   [id]
+ |  :dayw   [:- 7 9]       |        XX         XX         unschedule-task! [id]
+ |  :daym   [:# 2] [:# 3]  |      XX             XX
+ |  :month  [:*]           |     X      cronj      X
+ |  :year   [:*]           |    X                   X
+ +-------------------------+    X     :thread       X
+                                X     :last-check   X        timekeeper methods
+    cronj function               X    :interval    X    +-------------------------+
+    --------------                XX             XX        running?     start!
+   At every second.                 XX         XX          stopped?     stop!
+   looks at task                      XXXXXXXXX            restart!
+   list and triggers
+   handler functions
+   for each enabled
+   task.
+</pre>
 
 ### Tasks:
 
