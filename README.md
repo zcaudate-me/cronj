@@ -178,7 +178,7 @@ The complete map attributes are described:
    
 ### More Examples
 
-   (cj/schedule-task! {:id "print-date"
+    (cj/schedule-task! {:id "print-date"
              :desc "prints out the date every 5 seconds"
              :handler #'println
              :tab "/5 * * * * * *"})
