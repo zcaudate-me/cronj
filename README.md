@@ -20,177 +20,156 @@ I needed something that
  
 In project.clj, add to dependencies:
      
-     [cronj "0.1.0"]
-
-### Idea
-
-So the basic idea is the concept of a "task" that has the following attributes:
-
-      - "id" and "description" for meta description
-      - "schedule", to specify when the task should run
-      - "handler", the actual procedure that provides the functionality for a task
-
-Tasks can be added and removed on the fly through the `cronj` library interface and the library will then keep an eye out on the time. At the correct time that a task has been scheduled to start, the task handler will be launched in another thread. The actual polling loop is quite efficient and will only poll a maximum of twice every second with a 1ms timing error. Future improvements to the loop will hope to preempt the time that tasks should start and sleep until it is necessary to wake up.
-
-                                        task-list
-                __...--+----+----+----+----+----+----+----+----+----+----+----+----+
-       _..---'""      _|.--"|    |    |    |    |    |    |    |    |    |    |    |
-      +-------------+'_+----+----+----+----+----+----+----+----+----+----+----+----+
-      | task        |-     /                                              |
-      |             |     /                     X                         |
-      |    :id      |    /                    XXXXX               task-list methods
-      |    :desc    |   /                    XXXXXXX          +-------------------------+
-      |  ++:handler |  /                    XXXXXXXXX         | add-task(s)             |
-      | +++:schedule| /                        XXX            | remove-(all)-task(s)    |
-      | || :enabled |/                         XXX            | enable-(all)-task(s)    |
-      +-++----------+                          XXX            | disable-(all)-task(s)   |
-        ||  ,-.                                XXX            | toggle-(all)-task(s)    |
-        |+-(   ) fn[time]                      XXX            | list-(all)-task(s)      |
-        |   `-'                                XXX            | list-enabled-tasks      |
-       +-------------------------+             XXX            | list-disabled-tasks     |
-       |  "* 8 /2 7-9 2,3 * *"   |             XXX            |                         |
-       +-------------------------+             XXX            | $ (attribute selector)  |
-       |  :sec    [:*]           |             XXX            | (get/set)-schedule      |
-       |  :min    [:# 8]         |             XXX            | (get/set)-handler       |
-       |  :hour   [:| 2]         |          XXXXXXXXX         +-------------------------+
-       |  :dayw   [:- 7 9]       |        XX         XX
-       |  :daym   [:# 2] [:# 3]  |      XX             XX
-       |  :month  [:*]           |     X      cronj      X            cron methods
-       |  :year   [:*]           |    X                   X   +-------------------------+
-       +-------------------------+    X     :thread       X   |                         |
-                                      X     :last-run     X   |  running?     start!    |
-          cronj function               X    :interval    X    |  stopped?     stop!     |
-          --------------                XX             XX     |  $-interval   $-thread  |
-         At every second.                 XX         XX       |  $-last-run             |
-         looks at task                      XXXXXXXXX         |                         |
-         list and triggers                                    +-------------------------+
-         handler functions
-         for each enabled
-         task.
+     [cronj "0.2.0"]
 
 
-## Usage:
-
-#### Basic Usage
-
-`add-task`, `start!`, and `stop!` are really all the commands need to get going:
+### Usage
 
     (require '[cronj.core :as cj])
 
-    (cj/add-task {:id 0   :desc 0 :handler #(println "job 0:" %) :schedule "/5 * * * * * *"}) ;; every 5 seconds
-    (cj/add-task {:id 1   :desc 1 :handler #(println "job 1:" %) :schedule "/3 * * * * * *"}) ;; every 3 seconds
-
-    (cj/start!)
-
-    ;; wait for outputs ......
-    ;; get bored
+    (cj/load-tasks!
+     [{:id 1 :desc 1 :handler #(println "Task 1: " %) :tab "0-60/2 * * * * * *"}
+      {:id 2 :desc 2 :handler #(println "Task 2: " %) :tab "1-60/2 * * * * * *"}])
     
+    (cj/start!)
+    
+    ;; wait for outputs ......
+    > Task 1:  #DateTime 2012-09-17T14:10:24.000+10:00
+    > Task 2:  #DateTime 2012-09-17T14:10:25.001+10:00
+    > Task 1:  #DateTime 2012-09-17T14:10:26.000+10:00
+    > Task 2:  #DateTime 2012-09-17T14:10:27.001+10:00
+    > Task 1:  #DateTime 2012-09-17T14:10:28.000+10:00
+    
+    ;; get bored and stop
+    (cj/stop!)
+    
+    
+### Using with arguments
+Additional arguments can be added to the handler through the args option and a function that is takes the arguments
+
+    (cj/unschedule-all-tasks)
+    (cj/schedule-task! {:id 3 :desc 3 
+                        :handler (fn [dt & {:keys [task-name]}] (println task-name ": " dt)) 
+                        :tab "/2 * * * * * *"
+                        :args {:task-name "Hello There"}})
+    (cj/start!)
+    ;; more outputs ......
+    > Hello There :  #DateTime 2012-09-17T14:53:10.000+10:00
+    > Hello There :  #DateTime 2012-09-17T14:53:12.000+10:00
+    > Hello There :  #DateTime 2012-09-17T14:53:14.001+10:00
+
+    ;; stop outputs
     (cj/stop!)
 
-#### Task removal
-    (cj/remove-task 0)    ;; removes task with :id of 0
-    (cj/remove-all-tasks) ;; cleans out the task list
 
-#### Scheduling and Control
+Thats really it!
 
-Tasks can be added and removed whilst cronj is running. `add-task!` adds the task to the task list
-without throwing an exception if the task id is already present:
+## The Brief
 
-    ;; following on from the previous section
+Tasks can be added and removed on the fly through the `cronj` library interface and the library will then keep an eye out on the time. At the correct time that a task has been scheduled to start, the task handler will be launched in another thread. The actual polling loop is quite efficient and will only poll a maximum of twice every second with a 1ms timing error. Future improvements to the loop will hope to preempt the time that tasks should start and sleep until it is necessary to wake up.
 
-    (cj/start!)
+
+## Overview View:
+
+Cronj is seperated into three basic components:
+
+      - Tasks (are records that provide information about the task)
+      
+      - A Timesheet (to strictly schedule and unschedule tasks according to a `tab` schedule as well as as provide functionality to easily manipulate groups of tasks.)
+      
+      - A Timekeeper (keeps the time as triggers tasks at the interval that it is scheduled to run)
+
+
+## Methods
+The names should be pretty self evident:
+
+Tasks
+
+    unschedule-all-tasks!
+    schedule-task!
+    unschedule-task!
+    load-tasks!
+    list-all-tasks
+    contains-task?
+    select-task
+    enable-task!
+    disable-task!
+    trigger-task!
+    list-running-for-task 
+    kill-all-running-for-task!
+    kill-running-for-task!
+
+Timekeeper
+
+    stopped?
+    running?
+    start!
+    stop!
+    restart!
+
+Multiple Cronjs (not really needed)
+
+    set-cronj!!
+    new-cronj!!
+
+
+## Tasks:
+
+A "task" has the following attributes:
+
+      - "id" and "desc" for meta description of the task
+      - "handler", the actual procedure that provides the functionality for a task
+
+Additional arguments to the handler can be passed via the optional "args" attribute
+
+A task does not have a concept of when it will run. It only responds when it is asked to run and will keep track of all the instances of the task that are running.
+
+It is defined as follows:
+
+    (require '[cronj.task :as ct])
+    (require '[clj-time.core :as t])
+    (def task-10s (ct/new :10 "10s" 
+                         (fn [_] (println "I Last for 10 seconds")  
+                         (Thread/sleep 10000))))
+
+And triggered using:
+
+    (ct/exec! task-10s *id*)
+                                         
+where *id* has to be a unique identifier. In this case, we will use the the datetime. So when:
+
+    (ct/exec! task-10s (t/now))
+    ;; => I Last for 10 seconds
+    (ct/running task-10s) ;; within ten seconds
+    ;; => (#<DateTime 2012-09-17T05:19:36.223Z>)
+
     
-    ;; cronj is running....
-
-    (cj/add-task! {:id 0 :desc 0 :handler #(println "job 0:" %) 
-                   :schedule "/5 * * * * * *"}) ;; every 5 seconds
+### Long Running Tasks
     
-    ;; wait a bit and add another task
+A task may be scheduled to run every 30 seconds, but may take up to a minute to finish. In this case, the multiple threads will be spawned for multiple calls. Below is an example:
+
+    (ct/exec! task-10s (t/now))
+    (ct/exec! task-10s (t/now))
+    (ct/exec! task-10s (t/now))
+    (ct/running task-10s) ;; within ten seconds of the three
+    ;; => (#DateTime 2012-09-17T05:21:19.967Z #DateTime 2012-09-17T05:21:21.111Z #DateTime 2012-09-17T05:21:21.949Z)
     
-    (cj/add-task! {:id 1 :desc 1 :handler #(println "job 1:" %) 
-                   :schedule "/3 * * * * * *"}) ;; every 3 seconds    
+    ;; and then they can be killed individually or together:
+    (ct/kill-all task-10s)
+    (ct/running task-10s)
+    ;; => ()
 
-    ;; actually, task 1 is useless, lets remove it
-    
-    (cj/remove-task 1)
+The symbol `task-10s` actually references a map:
+    (println job-10s)
+    ;; => {:enabled #[Atom@5148bd9e: true], :running [DynaRec], :args {}, :last-called #[Atom@7e98f9c2: nil], :last-successful #[Atom@6d35707c: nil], :id :10, :desc 10s, :handler #user$fn}
 
-#### Enable/Disable
+The complete map attributes are described:
 
-Tasks can be individually enabled and disabled:
-
-    (cj/disable-task 0)   ;;=> disables the task with :id 0
-    (cj/enable-task 0)    ;;=> enables the task again
-    (cj/toggle-task 0)    ;;=> toggles the task
-    
-#### Task List
-similarily, most operations can also be done on the entire list:
-
-    (cj/list-all-tasks)
-    (cj/enable-all-tasks)
-    (cj/list-enabled-task-ids)  
-    (cj/disable-all-tasks)
-    (cj/list-disabled-task-ids)   ;; you should get the idea
-    (cj/toggle-all-tasks)
-
-task schedules can also be updated dynamically:
-
-    ;; whilst cronj is running
-    (cj/set-schedule 0 "/2 * * * * * *") ;; every 2 seconds instead of 3
-
-task handlers can also be updated:
-
-    (cj/set-handler 0 #(println "job 0 changed handlers:" %))
-
-##### More cron-like usage:
-
-    (cj/add-task! {:id "print-date"
-                 :desc "prints out the date every 5 seconds"
-                 :handler #'println
-                 :schedule "/5 * * * * * *"})
-                 
-    (cj/add-task! {:id "print-date"
-                :desc "prints out the date every 5 seconds between 32 and 60 seconds"
-                :handler #'println
-                :schedule "32-60/5 * * * * * *"})
-
-
-    (cj/add-task! {:id "print-date"
-                 :desc "prints out the date every 5 seconds on the
-                        9th and 10th minute of every hour on every Friday
-                        from June to August between the year 2012 to 2020"
-                 :handler #'println
-                 :schedule "/5  9,10  * 5 * 6-8 2012-2020"})
-                 
-##### launching shell commands
-
-Shell commands can be launched using the alternative map description:
-
-    (cj/add-task! {:id "print-date-sh"
-                 :desc "prints out the date every 5 seconds from the shell's 'date' function"
-                 :cmd "date"
-                 :schedule "/5 * * * * * *"})
-
-An output function can be added, which will be passed a `datetime` value and the output map of the finished
-shell command. See source code of `sh-print` for the simplest example usage.
-
-    (cj/add-task! {:id "print-date-sh-2"
-                 :desc "prints out the date every 5 seconds from the shell's 'date' function"
-                 :cmd "date"
-                 :cmd-fn (fn [dtime output] (println (format "At %s, command 'date' output the value %s"
-                                                             (str dtime)
-                                                             (:out output))))
-                 :schedule "/5 * * * * * *"})
-
-
-## Todos and improvements:
-##### commandline usage for single shell programs
-
-    java -jar cronj.jar --task "echo $(date)" --schedule "/5 * * * * * *"
-
-##### other suggestions
-Please fill free to suggest any features or changes that may improve the quality of the code.
-
-## License
-Copyright © 2012 Chris Zheng
-
-Distributed under the Eclipse Public License, the same as Clojure.
+    :id                The unique identifier for the task     
+    :desc              A description for the task
+    :handler           The function that is called using `exec!`
+    :enabled           If false, the task will not run
+    :args              Additionally arguments to the handler
+    :running           All the instances of the task that are still running
+    :last-called       The id of the last instance called using `exec!`
+    :last-successful   The id of the last instance that finished normally.
