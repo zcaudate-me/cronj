@@ -19,6 +19,8 @@
 (defn list-running-for-task [id & [cj]] (ts/list-running (:timesheet @(or cj *cronj*)) id))
 (defn kill-all-running-for-task! [id & [cj]] (ts/kill-all-running! (:timesheet @(or cj *cronj*)) id))
 (defn kill-running-for-task! [id tid & [cj]] (ts/kill-running! (:timesheet @(or cj *cronj*)) id tid))
+(defn last-started-for-task [id & [cj]] (ts/last-started (:timesheet @(or cj *cronj*)) id))
+(defn last-successful-for-task [id & [cj]] (ts/last-successful (:timesheet @(or cj *cronj*)) id))
 
 (defn stopped? [& [cj]] (k/stopped? (or cj *cronj*)))
 (defn running? [& [cj]] (k/running? (or cj *cronj*)))

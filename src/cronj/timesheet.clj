@@ -8,10 +8,10 @@
 
 (defn schedule!
   ([ts m]
-    (println m)
     (schedule! ts (dissoc m :tab) (:tab m)))
   ([ts m tab-str]
-     (let [tk  (task/new m)
+     (let [tk  (cond (task/is-task? m) m
+                     :else (task/new m))
            ttk (tab/assoc-tab tk tab-str)]
         (d/insert! ts ttk)))
   ([ts id desc handler tab-str & opts]
@@ -49,6 +49,8 @@
 (deftaskop list-running [] task/running)
 (deftaskop kill-all-running! [] task/kill-all!)
 (deftaskop kill-running! [tid] task/kill!)
+(deftaskop last-started [] task/last-called)
+(deftaskop last-successful [] task/last-successful)
 
 (defn <all [ts]
   (let [tks (d/search ts)]

@@ -9,8 +9,6 @@
 
 
 
-(t/exec! job-100ms :tid)
-
 (do
   (t/exec! job-100ms :test)
   (Thread/sleep 50)
