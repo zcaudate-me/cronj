@@ -48,10 +48,15 @@
        (swap! (:last-successful task) (fn [_] tid)))
      task))
 
+(defn- exec-hook [hook tid args]
+  (if (fn? hook) (hook tid args) args))
+
 (defn- exec-fn [task tid handler args]
   (try
-    (do
-      (apply handler tid (flatten (vec args)))
+    (let [post   (:post-hook task)
+          arglst (mapcat identity (vec args))
+          result (apply handler tid arglst)]
+      (exec-hook post tid (assoc args :result result))
       (deregister-thread task tid))
     (catch Exception e
       (println e)
@@ -65,10 +70,12 @@
     (d/has-id? (:running task) tid) (println "There is already a thread with id: " tid "running.")
 
     :else
-    (let [handler (:handler task)
-          args    (:args task)]
-      (register-thread task tid
-       (future (exec-fn task tid handler args))))))
+    (let [pre      (:pre-hook task)
+          handler  (:handler task)
+          args     (:args task)]
+      (register-thread
+       task tid
+       (future (exec-fn task tid handler (exec-hook pre tid args)))))))
 
 (defn last-called [task]
   {:pre [(is-task? task)]}
