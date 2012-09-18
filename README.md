@@ -81,8 +81,8 @@ Additional arguments can be added to the handler through the args option and a f
              :handler #'println
              :tab "/5  9,10  * 5 * 6-8 2012-2020"})
 
-##Hooks
-For additional control like cleanup and other side-effecting operations, post and pre hooks can also be set:
+### Hooks
+For additional control like cleanup and other side-effecting operations, post and pre hooks can also be set.
 
     (cj/unschedule-all-tasks!)
     (cj/schedule-task!
@@ -111,7 +111,7 @@ For additional control like cleanup and other side-effecting operations, post an
 
     (cj/stop!)
 
-Thats all really... now go write your own!
+Thats all really... now go write your own handlers!
 
 ## The Details
 
