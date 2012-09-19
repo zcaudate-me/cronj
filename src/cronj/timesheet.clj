@@ -64,4 +64,4 @@
 (defn trigger-matched! [ts dt dt-arr]
   (doseq [task (d/search ts)]
     (if (tab/match-arr? dt-arr (:tab-arr task))
-      (trigger-task! ts (:id task) dt))))
+      (trigger-task! ts (:id task) (tab/truncate-ms dt)))))
