@@ -19,3 +19,5 @@
 (pprint [(cj/last-exec-for-task :30s-task)
          (cj/last-successful-for-task :30s-task)])
 (cj/kill-all-running-for-task! :30s-task)
+(cj/list-all-tasks)
+(cj/list-all-task-ids)
