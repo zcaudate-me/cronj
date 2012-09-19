@@ -262,6 +262,16 @@ Enough about tasks, how do we go about using them as part of cronj? Tasks can be
         "3-60/4 * * * * * *")
 
     (cj/start!)
+
+    ;; Outputs:
+    ;; Task 2:  #<DateTime 2012-09-19T10:49:37.000+10:00>
+    ;; Task 3:  #<DateTime 2012-09-19T10:49:38.000+10:00>
+    ;; Task 4:  #<DateTime 2012-09-19T10:49:39.000+10:00>
+    ;; Task 1:  #<DateTime 2012-09-19T10:49:40.000+10:00>
+    ;; Task 2:  #<DateTime 2012-09-19T10:49:41.000+10:00>
+    ;; Task 3:  #<DateTime 2012-09-19T10:49:42.000+10:00>
+    ;; Task 4:  #<DateTime 2012-09-19T10:49:43.001+10:00>
+
     (cj/stop!)
 
 
@@ -308,6 +318,7 @@ The functions in `cronj.core` should be pretty self evident:
 Basic:
 
     list-all-tasks []
+    list-all-task-ids []
     load-tasks!    [v]
     unschedule-all-tasks! []
     schedule-task!   [task]
@@ -323,6 +334,9 @@ Controls:
     stop!    []
     restart! []
 
+    stop!!    []  the extra ! is for interruping and killing all unfinished threads
+    restart!! []
+
 Task Related:
 
     contains-task? [id]
@@ -331,6 +345,8 @@ Task Related:
     disable-task!  [id]
     trigger-task!  [id]
     list-running-for-task  [id]
+    last-exec-for-task [id]
+    last-successful-for-task [id]
     kill-all-running-for-task! [id]
     kill-running-for-task! [id tid]
 

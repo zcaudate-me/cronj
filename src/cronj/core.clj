@@ -14,6 +14,8 @@
 (defn load-tasks! [tasks & [cj]] (ts/load! (:timesheet @(or cj *cronj*)) tasks))
 
 (defn list-all-tasks [& [cj]] (ts/<all (:timesheet @(or cj *cronj*))))
+(defn list-all-task-ids [& [cj]] (d/ids (:timesheet @(or cj *cronj*))))
+
 (defn contains-task? [id & [cj]] (d/has-id? (:timesheet @(or cj *cronj*)) id))
 (defn select-task [id & [cj]] (ts/select-task (:timesheet @(or cj *cronj*)) id))
 (defn enable-task! [id & [cj]] (ts/enable-task! (:timesheet @(or cj *cronj*)) id))
@@ -30,6 +32,16 @@
 (defn start! [& [cj]] (k/start! (or cj *cronj*)))
 (defn stop! [& [cj]] (k/stop! (or cj *cronj*)))
 (defn restart! [& [cj]] (k/restart! (or cj *cronj*)))
+
+(defn stop!! [kp]
+  (stop! kp)
+  (doseq [id (list-all-task-ids)]
+    (kill-all-running-for-task! id)))
+
+(defn restart!! [& [cj]]
+  (stop!! (or cj *cronj*))
+  (start! (or cj *cronj*)))
+
 
 (defn set-cronj!! [cj] (swap! *cronj* (fn [_] @cj)))
 (defn new-cronj!! []
