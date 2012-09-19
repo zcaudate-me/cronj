@@ -22,7 +22,6 @@
   (t/enable job-200ms) => t/enabled?
   (t/disable job-200ms) => t/disabled?)
 
-
 (def a (cronj.task/new :1 "1st task" (fn [_] (println "Hello There")  (Thread/sleep 10000))))
 ;;(#'t/exec-fn a 1 (fn [_] (Thread/sleep 10000) (println "Hello There")) {})
 ;;(#'t/register-thread a 2 (future (println 111)))

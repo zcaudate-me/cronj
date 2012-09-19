@@ -8,16 +8,21 @@
 
 (defn schedule!
   ([ts m]
-    (schedule! ts (dissoc m :tab) (:tab m)))
+    {:pre [(contains? m :tab)]}
+    (schedule! ts m (:tab m)))
   ([ts m tab-str]
      (let [tk  (cond (task/is-task? m) m
                      :else (task/new m))
-           ttk (tab/assoc-tab tk tab-str)]
+           ttk (tab/assoc-tab (dissoc tk :tab) tab-str)]
         (d/insert! ts ttk)))
   ([ts id desc handler tab-str & opts]
      (let [tk  (apply task/new id desc handler opts)
            ttk (tab/assoc-tab tk tab-str)]
        (d/insert! ts ttk))))
+
+(defn reschedule! [ts id tab-str]
+  {:pre [(d/has-id? ts id)]}
+  (d/op! ts id tab/assoc-tab tab-str))
 
 (defn unschedule! [ts id]
   (let [tk (d/select ts id)]
@@ -49,7 +54,7 @@
 (deftaskop list-running [] task/running)
 (deftaskop kill-all-running! [] task/kill-all!)
 (deftaskop kill-running! [tid] task/kill!)
-(deftaskop last-started [] task/last-called)
+(deftaskop last-exec [] task/last-exec)
 (deftaskop last-successful [] task/last-successful)
 
 (defn <all [ts]

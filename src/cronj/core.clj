@@ -6,7 +6,10 @@
 (def ^:dynamic *cronj* (cronj.timekeeper/new))
 
 (defn unschedule-all-tasks! [& [cj]] (ts/unschedule-all! (:timesheet @(or cj *cronj*))))
-(defn schedule-task! [task & [cj]] (ts/schedule! (:timesheet @(or cj *cronj*)) task))
+(defn schedule-task!
+  ([task] (ts/schedule! (:timesheet @*cronj*) task))
+  ([task tab & [cj]] (ts/schedule! (:timesheet @(or cj *cronj*)) task tab)))
+(defn reschedule-task! [id tab & [cj]] (ts/reschedule! (:timesheet @(or cj *cronj*)) id tab))
 (defn unschedule-task! [id & [cj]] (ts/unschedule! (:timesheet @(or cj *cronj*)) id))
 (defn load-tasks! [tasks & [cj]] (ts/load! (:timesheet @(or cj *cronj*)) tasks))
 
@@ -19,7 +22,7 @@
 (defn list-running-for-task [id & [cj]] (ts/list-running (:timesheet @(or cj *cronj*)) id))
 (defn kill-all-running-for-task! [id & [cj]] (ts/kill-all-running! (:timesheet @(or cj *cronj*)) id))
 (defn kill-running-for-task! [id tid & [cj]] (ts/kill-running! (:timesheet @(or cj *cronj*)) id tid))
-(defn last-started-for-task [id & [cj]] (ts/last-started (:timesheet @(or cj *cronj*)) id))
+(defn last-exec-for-task [id & [cj]] (ts/last-exec (:timesheet @(or cj *cronj*)) id))
 (defn last-successful-for-task [id & [cj]] (ts/last-successful (:timesheet @(or cj *cronj*)) id))
 
 (defn stopped? [& [cj]] (k/stopped? (or cj *cronj*)))

@@ -15,7 +15,9 @@
                       (assoc args :pre "Hooked"))
           :post-hook (fn [dt args]
                        (println "In Post-Hook, Arguments: " args))
-          :args {:a "a" :b "b"}))
+          :args {:a "a" :b "b"}
+  ;; optional  :tab "/5 * * * * * *")
+  )
 
 (ct/exec! tsk 1)
 

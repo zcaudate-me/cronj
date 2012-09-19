@@ -2,12 +2,12 @@
   (require [hara.data.dyna :as d]))
 
 (def REQUIRED-TASK-KEYS [:id :desc :handler])
-(def ALL-TASK-KEYS [:id :desc :handler :enabled :args :running :last-called :last-successful])
+(def ALL-TASK-KEYS [:id :desc :handler :enabled :args :running :last-exec :last-successful])
 
 (defn new
   ([m]
      (into
-      {:enabled (atom true) :running (hara.data.dyna/new) :args {} :last-called (atom nil) :last-successful (atom nil)}
+      {:enabled (atom true) :running (hara.data.dyna/new) :args {} :last-exec (atom nil) :last-successful (atom nil)}
       m))
 
   ([id desc handler & opts]
@@ -15,7 +15,7 @@
            (into
             (apply hash-map opts))
            (into
-            {:enabled (atom true) :running (hara.data.dyna/new) :args {} :last-called (atom nil) :last-successful (atom nil)}))))
+            {:enabled (atom true) :running (hara.data.dyna/new) :args {} :last-exec (atom nil) :last-successful (atom nil)}))))
 
 (defn is-task? [m]
   (every? true? (map #(contains? m %) ALL-TASK-KEYS)))
@@ -36,7 +36,7 @@
 
 (defn- register-thread [task tid thd]
   (d/insert! (:running task) {:id tid :thread thd})
-  (swap! (:last-called task) (fn [_] tid))
+  (swap! (:last-exec task) (fn [_] tid))
   task)
 
 (defn- deregister-thread
@@ -77,9 +77,9 @@
        task tid
        (future (exec-fn task tid handler (exec-hook pre tid args)))))))
 
-(defn last-called [task]
+(defn last-exec [task]
   {:pre [(is-task? task)]}
-  @(:last-called task))
+  @(:last-exec task))
 
 (defn last-successful [task]
   {:pre [(is-task? task)]}
@@ -102,7 +102,7 @@
 
 (defn reinit! [task]
   (kill-all! task)
-  (swap! (:last-called task)
+  (swap! (:last-exec task)
          (fn [_] nil))
   (swap! (:last-successful task)
          (fn [_] nil))
@@ -111,8 +111,8 @@
 (defn <# [task]
   {:pre [(is-task? task)]}
   (->
-   (select-keys task [:id :desc :enabled :last-called :last-successful])
+   (select-keys task [:id :desc :enabled :last-exec :last-successful])
    (assoc :running (running task)
           :enabled @(:enabled task)
-          :last-called @(:last-called task)
+          :last-exec @(:last-exec task)
           :last-successful @(:last-successful task))))

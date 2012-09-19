@@ -185,7 +185,7 @@ A task does not have a concept of when it will run. It only responds when it is 
 `task-10s` references a map:
 
     (println job-10s)
-    ;; => {:enabled #[Atom@5148bd9e: true], :running [DynaRec], :args {}, :last-called #[Atom@7e98f9c2: nil], :last-successful #[Atom@6d35707c: nil], :id :10, :desc 10s, :handler #user$fn}
+    ;; => {:enabled #[Atom@5148bd9e: true], :running [DynaRec], :args {}, :last-exec #[Atom@7e98f9c2: nil], :last-successful #[Atom@6d35707c: nil], :id :10, :desc 10s, :handler #user$fn}
 
 It can be triggered using:
 
@@ -219,17 +219,88 @@ A task may be scheduled to run every 30 seconds, but may take up to a minute to 
     (ct/running task-10s)
     ;; => ()
 
-The complete map attributes are described:
+The complete set of attributes for the task map are described:
 
     :id                The unique identifier for the task
     :desc              A description for the task
     :handler           The function that is called using `exec!`
+    :pre-hook          Additional processing on the arguments prior to the execution of the handle
+    :post-hook         Post result handling after the handle is run
     :enabled           If false, the task will not run
-    :args              Additionally arguments to the handler
+    :args              Additional arguments to the handler
     :running           All the instances of the task that are still running
-    :last-called       The id of the last instance called using `exec!`
+    :last-exec         The id of the last instance called using `exec!`
     :last-successful   The id of the last instance that finished normally.
 
+### Cronj
+
+Enough about tasks, how do we go about using them as part of cronj? Tasks can be added to cronj in four ways, through a map or through a new task in combination with tab added in the task or later on:
+
+    (ns examples.schedules
+      (:require [cronj.task :as ct]
+                [cronj.core :as cj] :reload))
+
+    ;; Tab added first
+    (cj/schedule-task! 
+        {:id 1 
+         :desc 1 
+         :handler #(println "Task 1: " %) 
+         :tab "0-60/4 * * * * * *"})
+
+    (cj/schedule-task! 
+        (cronj.task/new 2 "2" #(println "Task 2: " %) :tab "1-60/4 * * * * * *"))
+
+    ;;Tab added later
+    (cj/schedule-task! 
+        {:id 3 
+         :desc 3 
+         :handler #(println "Task 3: " %)}
+        "2-60/4 * * * * * *")
+
+    (cj/schedule-task! 
+        (cronj.task/new 4 "4" #(println "Task 4: " %)) 
+        "3-60/4 * * * * * *")
+
+    (cj/start!)
+    (cj/stop!)
+
+
+Controls for each task can be accessed through cronj.core:
+
+    > (cj/unschedule-all-tasks!)
+    > (cj/schedule-task!
+       {:id :30s-task
+        :desc "This is a 30 second task"
+        :handler (fn [_] (Thread/sleep 30000))
+        :tab "/5 * * * * * *"})
+     
+     > (cj/start!) 
+
+     > (cj/running?) 
+     ;;=> true
+
+     > (pprint (cj/list-running-for-task :30s-task)) ;; after 10 secs
+     ;;=>  (#<DateTime 2012-09-19T11:09:40.000+10:00>
+     ;;     #<DateTime 2012-09-19T11:09:45.001+10:00>)
+
+     > (pprint (cj/list-running-for-task :30s-task)) ;; after 20 secs
+    ;;=>   (#<DateTime 2012-09-19T11:09:40.000+10:00>
+            #<DateTime 2012-09-19T11:09:45.001+10:00>
+            #<DateTime 2012-09-19T11:09:50.000+10:00>
+            #<DateTime 2012-09-19T11:09:55.001+10:00>)
+
+    > (pprint [(cj/last-exec-for-task :30s-task)  ;; should be 30s apart
+               (cj/last-successful-for-task :30s-task)])
+    ;;=>   [#<DateTime 2012-09-19T11:17:35.000+10:00>
+            #<DateTime 2012-09-19T11:17:05.000+10:00>]
+
+    > (cj/kill-all-running-for-task! :30s-task)
+    ;;=>    #<InterruptedException java.lang.InterruptedException: sleep interrupted>
+            #<InterruptedException java.lang.InterruptedException: sleep interrupted>
+            #<InterruptedException java.lang.InterruptedException: sleep interrupted>
+            #<InterruptedException java.lang.InterruptedException: sleep interrupted>
+            #<InterruptedException java.lang.InterruptedException: sleep interrupted>
+            #<InterruptedException java.lang.InterruptedException: sleep interrupted>
 
 ### Methods
 The functions in `cronj.core` should be pretty self evident:
@@ -239,7 +310,9 @@ Basic:
     list-all-tasks []
     load-tasks!    [v]
     unschedule-all-tasks! []
-    schedule-task!   [id]
+    schedule-task!   [task]
+    schedule-task!   [task tab]
+    reschedule-task!   [id tab]
     unschedule-task! [id]
 
 Controls:
