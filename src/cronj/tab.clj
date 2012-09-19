@@ -1,6 +1,7 @@
 (ns cronj.tab
   (:use [clojure.string :only [split]])
-  (:require [clj-time.core :as t]))
+  (:require [clj-time.core :as t]
+            [clj-time.local :as lt]))
 
 ;;(def !required-tab-keys [:id :tab-str :tab-arr])
 (def SCHEDULE-ELEMENTS [:sec :minute :hour :day-of-week :day :month :year])
@@ -69,11 +70,10 @@
        [t/sec t/minute t/hour t/day-of-week t/day t/month t/year]))
 
 (defn truncate-ms [dt]
-  (t/to-time-zone
+  (lt/to-local-date-time
    (apply t/date-time
           (map #(% dt)
-               [t/year t/month t/day t/hour t/minute t/sec]))
-   (t/default-time-zone)))
+               [t/year t/month t/day t/hour t/minute t/sec]))))
 
 (defn- match-elem? [dt-e tab-e]
   (cond (= tab-e :*) true
