@@ -2,19 +2,19 @@
 
 This is *another* cron-inspired task-scheduling library. I have found many scheduling libraries for clojure:
 
-  - [quartzite](https://github.com/michaelklishin/quartzite)
   - [cron4j](http://www.sauronsoftware.it/projects/cron4j)
   - [clj-cronlike](https://github.com/kognate/clj-cronlike)
   - [at-at](https://github.com/overtone/at-at)
   - [monotony](https://github.com/aredington/monotony)
+  - [quartzite](https://github.com/michaelklishin/quartzite)
 
-The first three all follow the cron convention. The "task" (also called a "job") can only be scheduled at whole minute intervals. [at-at](https://github.com/overtone/at-at) has milli-second resolution, but was limited in the number of threads that have to be predetermined. It was good for looking after tasks that did not overlap between calls but not for tasks that may take an arbitarily long time. [monotony](https://github.com/aredington/monotony) uses core.logic, which is something that I am yet to understand.
+The first two follow the cron convention. The "task" (also called a "job") can only be scheduled at whole minute intervals. [at-at](https://github.com/overtone/at-at) has milli-second resolution, but was limited in the number of threads that have to be predetermined. It was good for looking after tasks that did not overlap between calls but not for tasks that may take an arbitarily long time. [monotony](https://github.com/aredington/monotony) uses core.logic, which is something that I am yet to understand. If I had known [quartzite](https://github.com/michaelklishin/quartzite) had a field allowing seconds, I may have just used that but alas, I only found out when the library was announced on [google groups](https://groups.google.com/forum/?fromgroups=#!topic/clojure/SN4DdqFKIh4). I guess my only comment to the difference is that quarzite has more features but cronj has less dependencies and is written in pure clojure (relying only on clj-time, which is more or less a clojure staple for any sort of time-based application).
 
 I needed something that
 
   - started scheduled tasks with a per-second interval having high system-time accuracy without wasting system resourcs.
   - would spawn as many threads as needed, so that tasks started at earlier intervals could exist along side tasks started at later intervals.
-  - an additional design requirement required that task handlers are passed a date-time object, so that the handler itself is aware of the time when it was initiated.
+  - an additional design requirement required that task handlers are passed a date-time object, so that the handler itself is aware of the time when it was initiated. (something that quartz does not explicitly support)
 
 ### Installation:
 
