@@ -20,7 +20,7 @@ I needed something that
 
 In project.clj, add to dependencies:
 
-     [cronj "0.3.3"]
+     [cronj "0.3.4"]
 
 
 ### Usage
