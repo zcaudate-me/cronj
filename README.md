@@ -29,7 +29,7 @@ In project.clj, add to dependencies:
 
 This version shifted various components around.
 
-There is now a `cronj.global` to put the global timesheet and timeloop datastructures. Tasks are now triggered a watch function, as opposed to being triggered in the time-loop. I find this to be much more elegant and leads to looser coupling between the components, allowing for better tests, which I still need to add.
+There is now a `cronj.global` to put the global timesheet and timeloop datastructures. Tasks are now triggered a watch function, as opposed to being triggered in the time-loop. I find this to be much more elegant and leads to looser coupling between the components, allowing for better component testing, which I still need to add.
 
 I have moved `cronj.task`, `cronj.tab` and `cronj.timesheet` to  `cronj.data.task`, `cronj.data.tab` and `cronj.data.timesheet` respectively. `cronj.timekeeper` has been renamed to `cronj.loop`.
 
