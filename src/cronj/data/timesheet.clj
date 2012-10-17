@@ -1,10 +1,9 @@
-(ns cronj.timesheet
-  (:require [hara.data.dyna :as d]
-            [cronj.tab :as tab]
-            [cronj.task :as task] :reload))
+(ns cronj.data.timesheet
+  (:require [hara.dyna :as d]
+            [cronj.data.tab :as tab]
+            [cronj.data.task :as task]))
 
-(defn new []
-  (hara.data.dyna/new))
+(defn timesheet [] (d/dyna))
 
 (defn schedule!
   ([ts m]
@@ -12,11 +11,11 @@
     (schedule! ts m (:tab m)))
   ([ts m tab-str]
      (let [tk  (cond (task/is-task? m) m
-                     :else (task/new m))
+                     :else (task/task m))
            ttk (tab/assoc-tab (dissoc tk :tab) tab-str)]
         (d/insert! ts ttk)))
   ([ts id desc handler tab-str & opts]
-     (let [tk  (apply task/new id desc handler opts)
+     (let [tk  (apply task/task id desc handler opts)
            ttk (tab/assoc-tab tk tab-str)]
        (d/insert! ts ttk))))
 

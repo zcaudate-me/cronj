@@ -1,9 +1,9 @@
 (ns cronj.test-timesheet
     (:use midje.sweet)
-    (:require [hara.data.dyna :as d]
-              [cronj.timesheet :as ts] :reload))
+    (:require [hara.dyna :as d]
+              [cronj.data.timesheet :as ts] :reload))
 
-(def sheet (cronj.timesheet/new))
+(def sheet (ts/timesheet))
 
 (d/empty! sheet)
 (ts/schedule! sheet 0 0 #(println "job 0:" %) "/5 * * * * * *")

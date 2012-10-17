@@ -1,4 +1,4 @@
-(ns cronj.tab
+(ns cronj.data.tab
   (:use [clojure.string :only [split]])
   (:require [clj-time.core :as t]
             [clj-time.local :as lt]))

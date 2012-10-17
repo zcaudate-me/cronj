@@ -1,13 +1,13 @@
-(ns cronj.task
-  (require [hara.data.dyna :as d]))
+(ns cronj.data.task
+  (require [hara.dyna :as d]))
 
 (def REQUIRED-TASK-KEYS [:id :desc :handler])
 (def ALL-TASK-KEYS [:id :desc :handler :enabled :args :running :last-exec :last-successful])
 
-(defn new
+(defn task
   ([m]
      (into
-      {:enabled (atom true) :running (hara.data.dyna/new) :args {} :last-exec (atom nil) :last-successful (atom nil)}
+      {:enabled (atom true) :running (d/dyna) :args {} :last-exec (atom nil) :last-successful (atom nil)}
       m))
 
   ([id desc handler & opts]
@@ -15,7 +15,7 @@
            (into
             (apply hash-map opts))
            (into
-            {:enabled (atom true) :running (hara.data.dyna/new) :args {} :last-exec (atom nil) :last-successful (atom nil)}))))
+            {:enabled (atom true) :running (d/dyna) :args {} :last-exec (atom nil) :last-successful (atom nil)}))))
 
 (defn is-task? [m]
   (every? true? (map #(contains? m %) ALL-TASK-KEYS)))

@@ -1,52 +1,61 @@
 (ns cronj.core
-  (:require [hara.data.dyna :as d]
-            [cronj.timekeeper :as k]
-            [cronj.timesheet :as ts] :reload))
+  (:require [hara.dyna :as d]
+            [hara.fn :as f]
+            [cronj.loop :as lp]
+            [cronj.global :as g]
+            [cronj.data.timesheet :as ts]))
 
-(def ^:dynamic *cronj* (cronj.timekeeper/new))
 
-(defn unschedule-all-tasks! [& [cj]] (ts/unschedule-all! (:timesheet @(or cj *cronj*))))
+(defn unschedule-all-tasks! [] (ts/unschedule-all! g/*timesheet*))
+
 (defn schedule-task!
-  ([task] (ts/schedule! (:timesheet @*cronj*) task))
-  ([task tab & [cj]] (ts/schedule! (:timesheet @(or cj *cronj*)) task tab)))
-(defn reschedule-task! [id tab & [cj]] (ts/reschedule! (:timesheet @(or cj *cronj*)) id tab))
-(defn unschedule-task! [id & [cj]] (ts/unschedule! (:timesheet @(or cj *cronj*)) id))
-(defn load-tasks! [tasks & [cj]] (ts/load! (:timesheet @(or cj *cronj*)) tasks))
+  ([task] (ts/schedule! g/*timesheet* task))
+  ([task tab] (ts/schedule! g/*timesheet* task tab)))
 
-(defn list-all-tasks [& [cj]] (ts/<all (:timesheet @(or cj *cronj*))))
-(defn list-all-task-ids [& [cj]] (d/ids (:timesheet @(or cj *cronj*))))
+(defn reschedule-task! [id tab] (ts/reschedule! g/*timesheet* id tab))
 
-(defn contains-task? [id & [cj]] (d/has-id? (:timesheet @(or cj *cronj*)) id))
-(defn select-task [id & [cj]] (ts/select-task (:timesheet @(or cj *cronj*)) id))
-(defn enable-task! [id & [cj]] (ts/enable-task! (:timesheet @(or cj *cronj*)) id))
-(defn disable-task! [id & [cj]] (ts/disable-task! (:timesheet @(or cj *cronj*)) id))
-(defn trigger-task! [id & [cj]] (ts/enable-task! (:timesheet @(or cj *cronj*)) id))
-(defn list-running-for-task [id & [cj]] (ts/list-running (:timesheet @(or cj *cronj*)) id))
-(defn kill-all-running-for-task! [id & [cj]] (ts/kill-all-running! (:timesheet @(or cj *cronj*)) id))
-(defn kill-running-for-task! [id tid & [cj]] (ts/kill-running! (:timesheet @(or cj *cronj*)) id tid))
-(defn last-exec-for-task [id & [cj]] (ts/last-exec (:timesheet @(or cj *cronj*)) id))
-(defn last-successful-for-task [id & [cj]] (ts/last-successful (:timesheet @(or cj *cronj*)) id))
+(defn unschedule-task! [id] (ts/unschedule! g/*timesheet* id))
 
-(defn stopped? [& [cj]] (k/stopped? (or cj *cronj*)))
-(defn running? [& [cj]] (k/running? (or cj *cronj*)))
-(defn start! [& [cj]] (k/start! (or cj *cronj*)))
-(defn stop! [& [cj]] (k/stop! (or cj *cronj*)))
-(defn restart! [& [cj]] (k/restart! (or cj *cronj*)))
+(defn load-tasks! [tasks] (ts/load! g/*timesheet* tasks))
 
-(defn stop!! [kp]
-  (stop! kp)
+(defn list-all-tasks [] (ts/<all g/*timesheet*))
+
+(defn list-all-task-ids [] (d/ids g/*timesheet*))
+
+(defn contains-task? [id] (d/has-id? g/*timesheet* id))
+
+(defn select-task [id] (ts/select-task g/*timesheet* id))
+
+(defn enable-task! [id] (ts/enable-task! g/*timesheet* id))
+
+(defn disable-task! [id] (ts/disable-task! g/*timesheet* id))
+
+(defn trigger-task! [id] (ts/enable-task! g/*timesheet* id))
+
+(defn list-running-for-task [id] (ts/list-running g/*timesheet* id))
+
+(defn kill-all-running-for-task! [id] (ts/kill-all-running! g/*timesheet* id))
+
+(defn kill-running-for-task! [id tid] (ts/kill-running! g/*timesheet* id tid))
+
+(defn last-exec-for-task [id] (ts/last-exec g/*timesheet* id))
+
+(defn last-successful-for-task [id] (ts/last-successful g/*timesheet* id))
+
+(defn stopped? [] (lp/stopped? g/*timeloop*))
+
+(defn running? [] (lp/running? g/*timeloop*))
+
+(defn start! [] (lp/start! g/*timeloop*))
+
+(defn stop! [] (lp/stop! g/*timeloop*))
+
+(defn restart! []
+  (stop!)
+  (start!))
+
+(defn shutdown!! []
+  (stop!)
   (doseq [id (list-all-task-ids)]
-    (kill-all-running-for-task! id)))
-
-(defn restart!! [& [cj]]
-  (stop!! (or cj *cronj*))
-  (start! (or cj *cronj*)))
-
-
-(defn set-cronj!! [cj] (swap! *cronj* (fn [_] @cj)))
-(defn new-cronj!! []
-  (let [ret (cronj.timekeeper/new)]
-        (unschedule-all-tasks! *cronj*)
-        (stop! *cronj*)
-    (set-cronj!! ret)
-    ret))
+    (kill-all-running-for-task! id))
+  (unschedule-all-tasks!))

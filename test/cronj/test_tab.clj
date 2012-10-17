@@ -1,8 +1,8 @@
 (ns cronj.test-tab
     (:use midje.sweet)
-    (:require [hara.data.dyna :as d]
+    (:require [hara.dyna :as d]
               [clj-time.core :as t]
-              [cronj.tab :as tb] :reload))
+              [cronj.data.tab :as tb] :reload))
 
 (def test-num (range 60))
 (def -* #'tb/*-)

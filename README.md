@@ -20,7 +20,20 @@ I needed something that
 
 In project.clj, add to dependencies:
 
-     [cronj "0.3.4"]
+     [cronj "0.5.2"]
+
+
+### New Features:
+
+#### v0.5.2
+
+This version shifted various components around.
+
+There is now a `cronj.global` to put the global timesheet and timeloop datastructures. Tasks are now triggered a watch function, as opposed to being triggered in the time-loop. I find this to be much more elegant and leads to looser coupling between the components, allowing for better tests, which I still need to add.
+
+I have moved `cronj.task`, `cronj.tab` and `cronj.timesheet` to  `cronj.data.task`, `cronj.data.tab` and `cronj.data.timesheet` respectively. `cronj.timekeeper` has been renamed to `cronj.loop`.
+
+The `cronj.core` namespace has remained pretty constant. The `new-cronj!!` and `set-cronj!!` methods have been taken out, mainly to stop users (myself mainly) from shooting themselves in the foot by creating lots of cronj instances. Previously, there could be multiple cronj loops running with multiple timesheets. Now there now can only be one cronj time-loop initiated.
 
 
 ### Usage
@@ -176,7 +189,7 @@ A "task" has the following attributes:
 
 A task does not have a concept of when it will run. It only responds when it is asked to run and will keep track of all the instances of the task that are running. It is defined as follows:
 
-    (require '[cronj.task :as ct])
+    (require '[cronj.data.task :as ct])
     (require '[clj-time.core :as t])
     (def task-10s (ct/new :10 "10s"
                          (fn [_] (println "I Last for 10 seconds")
@@ -237,28 +250,28 @@ The complete set of attributes for the task map are described:
 Enough about tasks, how do we go about using them as part of cronj? Tasks can be added to cronj in four ways, through a map or through a new task in combination with tab added in the task or later on:
 
     (ns examples.schedules
-      (:require [cronj.task :as ct]
+      (:require [cronj.data.task :as ct]
                 [cronj.core :as cj] :reload))
 
     ;; Tab added first
-    (cj/schedule-task! 
-        {:id 1 
-         :desc 1 
-         :handler #(println "Task 1: " %) 
+    (cj/schedule-task!
+        {:id 1
+         :desc 1
+         :handler #(println "Task 1: " %)
          :tab "0-60/4 * * * * * *"})
 
-    (cj/schedule-task! 
+    (cj/schedule-task!
         (cronj.task/new 2 "2" #(println "Task 2: " %) :tab "1-60/4 * * * * * *"))
 
     ;;Tab added later
-    (cj/schedule-task! 
-        {:id 3 
-         :desc 3 
+    (cj/schedule-task!
+        {:id 3
+         :desc 3
          :handler #(println "Task 3: " %)}
         "2-60/4 * * * * * *")
 
-    (cj/schedule-task! 
-        (cronj.task/new 4 "4" #(println "Task 4: " %)) 
+    (cj/schedule-task!
+        (cronj.task/new 4 "4" #(println "Task 4: " %))
         "3-60/4 * * * * * *")
 
     (cj/start!)
@@ -283,10 +296,10 @@ Controls for each task can be accessed through cronj.core:
         :desc "This is a 30 second task"
         :handler (fn [_] (Thread/sleep 30000))
         :tab "/5 * * * * * *"})
-     
-     > (cj/start!) 
 
-     > (cj/running?) 
+     > (cj/start!)
+
+     > (cj/running?)
      ;;=> true
 
      > (pprint (cj/list-running-for-task :30s-task)) ;; after 10 secs
@@ -331,11 +344,10 @@ Controls:
     stopped? []
     running? []
     start!   []
-    stop!    []
+    stop!    []    stops the loop but lets all running tasks complete
     restart! []
 
-    stop!!    []  the extra ! is for interruping and killing all unfinished threads
-    restart!! []
+    shutdown!! []  stops the loop, interruping and killing all unfinished task threads
 
 Task Related:
 
@@ -350,10 +362,6 @@ Task Related:
     kill-all-running-for-task! [id]
     kill-running-for-task! [id tid]
 
-Advanced (not used except in unsual circumstances)
-
-    set-cronj!! [cj]
-    new-cronj!! []
 
 ## TODO:
 
