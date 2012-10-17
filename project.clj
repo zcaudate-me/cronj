@@ -1,4 +1,4 @@
-(defproject cronj "0.4.1"
+(defproject cronj "0.5.2"
   :description "This is task-scheduling library inspired by the cron syntax."
   :license {:name "Eclipse Public License"
             :url "http://www.eclipse.org/legal/epl-v10.html"}
