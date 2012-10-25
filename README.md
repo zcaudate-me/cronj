@@ -191,7 +191,7 @@ A task does not have a concept of when it will run. It only responds when it is 
 
     (require '[cronj.data.task :as ct])
     (require '[clj-time.core :as t])
-    (def task-10s (ct/new :10 "10s"
+    (def task-10s (ct/task :10 "10s"
                          (fn [_] (println "I Last for 10 seconds")
                                  (Thread/sleep 10000))))
 
