@@ -1,7 +1,11 @@
 (ns cronj.test-timesheet
     (:use midje.sweet)
-    (:require [hara.dyna :as d]
+    (:require [hara.ova :as v]
               [cronj.data.timesheet :as ts] :reload))
+
+
+(defn timesheet [v]
+  ())
 
 (def sheet (ts/timesheet))
 

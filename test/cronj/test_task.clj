@@ -1,17 +1,17 @@
 (ns cronj.test-task
     (:use midje.sweet)
-    (:require [hara.dyna :as d]
+    (:require [hara.ova :as v]
               [clj-time.local :as lt]
               [cronj.data.task :as t] :reload))
 
-(facts "task creation"
-  (let [mt (t/task :test-task "test-task" (fn [_]))]
+(facts "initial values"
+  (let [mt (t/task :test-task (fn [_]))]
     (fact "the created task is accepted as a task"
       (t/is-task?   mt) => true)
     (fact "the test is enabled by default"
       (t/enabled?   mt) => true)
-    (fact "the test is therefore not by disabled"
-      (t/disabled?  mt) => false) ;; expect that
+    (fact "the test is therefore not disabled by default"
+      (t/disabled?  mt) => false)
     (fact "there are no tasks running"
       (t/running    mt) => ())  ;;
     (fact "there should be no last executed id"
@@ -19,19 +19,25 @@
     (fact "there should be no last successful id"
       (t/last-successful mt) => nil)
     (fact "output print friendly form"
-      (t/<# mt) => {:id :test-task
-                    :desc "test-task"
-                    :enabled true
-                    :running ()
-                    :last-exec nil
-                    :last-successful nil})))
+        (t/<# mt) => {:id :test-task
+                      :desc ""
+                      :enabled true
+                      :running ()
+                      :last-exec nil
+                      :last-successful nil})))
+
+(facts "enabling and disabling tasks"
+  (let [mt (t/task :test-task (fn [_]))]
+    (fact "Testing enable and disable functions"
+      (t/enable mt) => t/enabled?
+      (t/disable mt) => t/disabled?)))
 
 
 (facts "task execution"
   "Setup the data object as well as the tasks that manipulate the data object"
   (let [mda (atom nil)
-        mt1 (t/task :mt1 "mt1" (fn [_] (reset! mda 1)))
-        mt2 (t/task :mt2 "mt2" (fn [_] (reset! mda 2)))]
+        mt1 (t/task :mt1 (fn [_] (reset! mda 1)))
+        mt2 (t/task :mt2 (fn [_] (reset! mda 2)))]
 
     (do (t/exec! mt1 :mt1-first) (Thread/sleep 5))      ;; time for thread to update
     (facts "mt1-first"
@@ -40,7 +46,14 @@
       (fact "last-exec should be :mt1-first"
         (t/last-exec mt1) => :mt1-first)
       (fact "last-successful should be :mt1-first"
-        (t/last-successful mt1) => :mt1-first))
+        (t/last-successful mt1) => :mt1-first)
+      (fact "output print friendly form"
+        (t/<# mt1) => {:id :mt1
+                       :desc ""
+                       :enabled true
+                       :running ()
+                       :last-exec :mt1-first
+                       :last-successful :mt1-first}))
 
     (do (t/exec! mt2 :mt2-first) (Thread/sleep 5))     ;; time for thread to update
     (facts "atfer mt2-first"
@@ -61,44 +74,65 @@
         (t/last-successful mt1) => :mt1-second))))
 
 
+(facts "longer task execution behaviour"
+  (let [job-100ms (t/task :1 (fn [_] (Thread/sleep 100)))]
+    (do (t/exec! job-100ms :test) ;; Starting the execution
+        (Thread/sleep 50)
+        (fact "When the job is still running, it will be in the list of running jobs"
+          (t/running job-100ms) => '(:test))
+        (Thread/sleep 200)
+        (fact "When the job has finished, it will not appear in the list of running jobs"
+          (t/running job-100ms) => '()))))
 
+(facts "multiple threading execution behaviour"
+  (let [job (t/task :job (fn [_] (Thread/sleep 200)))]
+    (do (t/exec! job :1) ;; Starting the execution
+        (Thread/sleep 150)
+        (t/exec! job :2) ;; Starting the execution 400ms after test1
+        (Thread/sleep 10)
+        (fact "All the jobs are running"
+          (t/running job) => '(:1 :2)
+          (t/last-exec job) => :2
+          (t/last-successful job) => nil)
+        (Thread/sleep 150)
+        (fact "Job 1 will finish"
+          (t/running job) => '(:2)
+          (t/last-successful job) => :1)
+        (Thread/sleep 50)
+        (fact "Job 1 will finish"
+          (t/running job) => '()
+          (t/last-successful job) => :2))))
 
-(comment
+(facts "kill!"
+  (let [job (t/task :job (fn [_] (Thread/sleep 2000000)))]
+    (do (t/exec! job :1) ;; Starting the execution
+        (Thread/sleep 10)
+        (fact "Check that the job is running"
+          (t/running job) => '(:1)
+          (t/last-exec job) => :1
+          (t/last-successful job) => nil)
+        (t/kill! job :1)
+        (fact "Job 1 will finish"
+          (t/running job) => '()
+          (t/last-exec job) => :1
+          (t/last-successful job) => nil))))
 
-
-
-  (def job-100ms (t/task :1 "100ms" (fn [_] (println "100ms Job")  (Thread/sleep 100))))
-  (def job-200ms (t/task :2 "200ms" (fn [_] (println "200ms Job")  (Thread/sleep 200))))
-  (def job-200-args (t/task :2 "200ms" (fn [_ a b] (println "200ms Job" a b)  (Thread/sleep 200)) :a " A " :b " B "))
-
-
-  (do
-    (t/exec! job-100ms :test)
-    (Thread/sleep 50)
-    (fact "This will return"
-      (t/running job-100ms) => '(:test))
-    (Thread/sleep 200)
-    (fact "This will return empty"
-      (t/running job-100ms) => '()))
-
-  (fact "Testing enable and disable functions"
-    (t/enable job-200ms) => t/enabled?
-    (t/disable job-200ms) => t/disabled?)
-
-  (def a (t/task :1 "1st task" (fn [_] (println "Hello There")  (Thread/sleep 10000))))
-  ;;(#'t/exec-fn a 1 (fn [_] (Thread/sleep 10000) (println "Hello There")) {})
-  ;;(#'t/register-thread a 2 (future (println 111)))
-  ;;(t/enabled? a)
-  ;;(t/disabled? a)
-  ;;(t/exec! a 1)
-  ;;(t/kill! a 1)
-  ;;(t/kill-all! a)
-  ;;(t/running a)
-  ;;(println a)
-  ;;((:handler a) 1)
-
-
-
-  #_(fact "new creates a new task"
-      )
-  )
+(facts "kill-all!"
+  (let [job (t/task :job (fn [_] (Thread/sleep 2000000)))]
+    (do (t/exec! job :1) ;; Starting the execution
+        (t/exec! job :2) ;; Starting the execution
+        (Thread/sleep 30)
+        (fact "Check that the job is running"
+          (t/running job) => '(:1 :2)
+          (t/last-exec job) => :2
+          (t/last-successful job) => nil)
+        (t/kill-all! job)
+        (fact "Job 1 will finish"
+          (t/running job) => '()
+          (t/last-exec job) => :2
+          (t/last-successful job) => nil)
+        (t/reinit! job)
+        (fact "Reinitialise tasks"
+          (t/running job) => '()
+          (t/last-exec job) => nil
+          (t/last-successful job) => nil))))
