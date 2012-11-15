@@ -30,7 +30,7 @@
 
 (defn disable-task! [id] (ts/disable-task! g/*timesheet* id))
 
-(defn trigger-task! [id] (ts/enable-task! g/*timesheet* id))
+(defn trigger-task! [id] (ts/trigger-task! g/*timesheet* id))
 
 (defn list-running-for-task [id] (ts/list-running g/*timesheet* id))
 

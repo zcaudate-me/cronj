@@ -42,10 +42,12 @@
 (defn- deregister-thread
   ([task tid] (deregister-thread task tid true))
   ([task tid success?]
-     (Thread/sleep 100)
+     (Thread/sleep 1) ;; This call to sleep lasts 100ms - a bloody long time can we take it out?
      (d/delete! (:running task) tid)
+    ;;(println "Deregistering thread" tid)
      (if success?
        (swap! (:last-successful task) (fn [_] tid)))
+    ;;(println "Last successful:" (:last-successful task))
      task))
 
 (defn- exec-hook [hook tid args]
@@ -57,13 +59,13 @@
           arglst (mapcat identity (vec args))
           result (apply handler tid arglst)]
       (exec-hook post tid (assoc args :result result))
-      (deregister-thread task tid))
+      (deregister-thread task tid true))
     (catch Exception e
       (println e)
       (deregister-thread task tid false))))
 
 (defn exec! [task tid]
-  {:pre [(is-task? task)]}
+  ;;{:pre [(is-task? task)]}
   (cond
     (disabled? task) (println "Task (" (:id task) ") is not enabled")
 
@@ -78,15 +80,15 @@
        (future (exec-fn task tid handler (exec-hook pre tid args)))))))
 
 (defn last-exec [task]
-  {:pre [(is-task? task)]}
+  ;;{:pre [(is-task? task)]}
   @(:last-exec task))
 
 (defn last-successful [task]
-  {:pre [(is-task? task)]}
+  ;;{:pre [(is-task? task)]}
   @(:last-successful task))
 
 (defn running [task]
-  {:pre [(is-task? task)]}
+  ;;{:pre [(is-task? task)]}
   (->> (d/search (:running task))
       (map :id)))
 

@@ -9,7 +9,7 @@
 (def every-5-seconds-0 [(-* 0 60 5) (-*) (-*) (-*) (-*) (-*) (-*)])
 (def every-5-seconds-1 [(-* 5) (-*) (-*) (-*) (-*) (-*) (-*)])
 
-
+;; Unit Tests
 (fact "*- takes a string and returns something"
   (#'tb/*-) => :*
   (map (#'tb/*- 2) test-num) => (map even? test-num)
@@ -26,7 +26,6 @@
 (fact "parse-str takes a string and creates matches"
   (tb/parse-tab "* * * * * * *") => '[(:*) (:*) (:*) (:*) (:*) (:*) (:*)]
   (tb/parse-tab "1,2 1,5 * * 1 * *") => '[(1 2) (1 5) (:*) (:*) (1) (:*) (:*)])
-
 
 (tabular
  (fact "Testing the 'match-entry?' function"
