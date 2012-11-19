@@ -1,61 +1,103 @@
 (ns cronj.core
-  (:require [hara.dyna :as d]
+  (:require [hara.ova :as v]
             [hara.fn :as f]
-            [cronj.loop :as lp]
-            [cronj.global :as g]
-            [cronj.data.timesheet :as ts]))
+            [cronj.data.task :as tk]
+            [cronj.data.timer :as tm]
+            [cronj.data.timetable :as tt]))
 
+(declare install-watch cronj-init)
 
-(defn unschedule-all-tasks! [] (ts/unschedule-all! g/*timesheet*))
+(defn cronj
+  ([]
+     (let [timetable (tt/timetable)
+           timer     (tm/timer)]
+       (install-watch timer timetable)
+       {:timer timer
+        :timetable timetable}))
+  ([& args]
+     (let [cnj      (cronj)
+           margs    (apply hash-map args)
+           interval (:interval margs)
+           entries  (:entries    margs)]
+       (if interval
+         (swap! (:timer cnj) assoc :interval interval))
+       (cronj-init cnj entries)
+       cnj)))
 
-(defn schedule-task!
-  ([task] (ts/schedule! g/*timesheet* task))
-  ([task tab] (ts/schedule! g/*timesheet* task tab)))
+(defmacro defcronj [name & args]
+  `(def ~name (cronj ~@args)))
 
-(defn reschedule-task! [id tab] (ts/reschedule! g/*timesheet* id tab))
+(defn cronj-init [cnj entries]
+  (let [tk-fn    (fn [e] (tk/task (select-keys e [:id :handler :desc])))
+        tks      (map tk-fn entries)
+        tt-fn    (fn [e] (select-keys e [:enabled :opts :schedule]))
+        tts      (map tt-fn entries)]
+    (dorun
+     (map (fn [tk tt] (tt/schedule-task (:timetable cnj) tk tt)) tks tts))))
 
-(defn unschedule-task! [id] (ts/unschedule! g/*timesheet* id))
+(defn- install-watch [timer tt]
+  (add-watch timer :time-watch
+   (f/watch-for-change
+    [:last-check]
+    (fn [_ rf _ _]
+      (let [r @rf]
+        (tt/trigger! tt (:last-check-time r)))))))
 
-(defn load-tasks! [tasks] (ts/load! g/*timesheet* tasks))
+;;----------------------
+(defn schedule-task [cnj task schedule & [enabled? opts]]
+  (tt/schedule-task (:timetable cnj) task schedule enabled? opts))
 
-(defn list-all-tasks [] (ts/<all g/*timesheet*))
+(defn unschedule-task [cnj task-id]
+  (tt/unschedule-task (:timetable cnj) task-id))
 
-(defn list-all-task-ids [] (d/ids g/*timesheet*))
+(defn unschedule-all [cnj]
+  (doseq [id (tt/task-ids (:timetable cnj))]
+    (tt/unschedule-task (:timetable cnj) id)))
 
-(defn contains-task? [id] (d/has-id? g/*timesheet* id))
+(defn kill-threads [cnj task-id tid]
+  (tk/kill! (tt/get-task (:timetable cnj) task-id) tid))
 
-(defn select-task [id] (ts/select-task g/*timesheet* id))
+(defn kill-all-threads
+  ([cnj task-id] (tk/kill-all! (tt/get-task (:timetable cnj))))
+  ([cnj]
+     (doseq [id (tt/task-ids (:timetable cnj))]
+       (kill-all-threads cnj id))))
 
-(defn enable-task! [id] (ts/enable-task! g/*timesheet* id))
+;;----------------------
+(defn task-ids [cnj]
+  (tt/task-ids (:timetable cnj)))
 
-(defn disable-task! [id] (ts/disable-task! g/*timesheet* id))
+(defn task-threads [cnj]
+  (tt/task-threads (:timetable cnj)))
 
-(defn trigger-task! [id] (ts/trigger-task! g/*timesheet* id))
+(defn get-task [cnj task-id]
+  (tt/get-task (:timetable cnj) task-id))
 
-(defn list-running-for-task [id] (ts/list-running g/*timesheet* id))
+(defn enable-task [cnj task-id]
+  (tt/enable-task (:timetable cnj) task-id))
 
-(defn kill-all-running-for-task! [id] (ts/kill-all-running! g/*timesheet* id))
+(defn disable-task [cnj task-id]
+  (tt/disable-task (:timetable cnj) task-id))
 
-(defn kill-running-for-task! [id tid] (ts/kill-running! g/*timesheet* id tid))
+(defn task-enabled? [cnj task-id]
+  (tt/task-enabled? (:timetable cnj) task-id))
 
-(defn last-exec-for-task [id] (ts/last-exec g/*timesheet* id))
+(defn task-disabled? [cnj task-id]
+  (tt/task-disabled? (:timetable cnj) task-id))
 
-(defn last-successful-for-task [id] (ts/last-successful g/*timesheet* id))
+;;----------------------
+(defn start! [cnj] (tm/start! (:timer cnj)))
 
-(defn stopped? [] (lp/stopped? g/*timeloop*))
+(defn stop! [cnj] (tm/stop! (:timer cnj)))
 
-(defn running? [] (lp/running? g/*timeloop*))
+(defn stopped? [cnj] (tm/stopped? (:timer cnj)))
 
-(defn start! [] (lp/start! g/*timeloop*))
+(defn running? [cnj] (tm/running? (:timer cnj)))
 
-(defn stop! [] (lp/stop! g/*timeloop*))
+(defn shutdown!! [cnj]
+  (stop! cnj)
+  (kill-all-threads cnj))
 
-(defn restart! []
-  (stop!)
-  (start!))
-
-(defn shutdown!! []
-  (stop!)
-  (doseq [id (list-all-task-ids)]
-    (kill-all-running-for-task! id))
-  (unschedule-all-tasks!))
+(defn restart!! [cnj]
+  (shutdown!! cnj)
+  (start! cnj))

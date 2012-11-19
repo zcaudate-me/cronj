@@ -4,14 +4,12 @@
               [clj-time.local :as lt]
               [cronj.data.task :as t] :reload))
 
+(Thread/sleep 100)
+
 (facts "initial values"
-  (let [mt (t/task :test-task (fn [_]))]
+  (let [mt (t/task :test-task (fn [& _]))]
     (fact "the created task is accepted as a task"
       (t/is-task?   mt) => true)
-    (fact "the test is enabled by default"
-      (t/enabled?   mt) => true)
-    (fact "the test is therefore not disabled by default"
-      (t/disabled?  mt) => false)
     (fact "there are no tasks running"
       (t/running    mt) => ())  ;;
     (fact "there should be no last executed id"
@@ -21,25 +19,17 @@
     (fact "output print friendly form"
         (t/<# mt) => {:id :test-task
                       :desc ""
-                      :enabled true
                       :running ()
                       :last-exec nil
                       :last-successful nil})))
 
-(facts "enabling and disabling tasks"
-  (let [mt (t/task :test-task (fn [_]))]
-    (fact "Testing enable and disable functions"
-      (t/enable mt) => t/enabled?
-      (t/disable mt) => t/disabled?)))
-
-
 (facts "task execution"
   "Setup the data object as well as the tasks that manipulate the data object"
   (let [mda (atom nil)
-        mt1 (t/task :mt1 (fn [_] (reset! mda 1)))
-        mt2 (t/task :mt2 (fn [_] (reset! mda 2)))]
+        mt1 (t/task :mt1 (fn [& _] (reset! mda 1)))
+        mt2 (t/task :mt2 (fn [& _] (reset! mda 2)))]
 
-    (do (t/exec! mt1 :mt1-first) (Thread/sleep 5))      ;; time for thread to update
+    (do (t/exec! mt1 :mt1-first) (Thread/sleep 100))      ;; time for thread to update
     (facts "mt1-first"
       (fact "data should be 1"
         (deref mda) => 1)
@@ -50,12 +40,11 @@
       (fact "output print friendly form"
         (t/<# mt1) => {:id :mt1
                        :desc ""
-                       :enabled true
                        :running ()
                        :last-exec :mt1-first
                        :last-successful :mt1-first}))
 
-    (do (t/exec! mt2 :mt2-first) (Thread/sleep 5))     ;; time for thread to update
+    (do (t/exec! mt2 :mt2-first) (Thread/sleep 100))     ;; time for thread to update
     (facts "atfer mt2-first"
       (fact "data should be 2"
         (deref mda) => 2)
@@ -64,7 +53,7 @@
       (fact "last-successful should be :mt2-first"
         (t/last-successful mt2) => :mt2-first))
 
-    (do (t/exec! mt1 :mt1-second) (Thread/sleep 5))    ;; time for thread to update
+    (do (t/exec! mt1 :mt1-second) (Thread/sleep 100))    ;; time for thread to update
     (facts "after mt1-second"
       (fact "data should be 1"
         (deref mda) => 1)
@@ -75,28 +64,28 @@
 
 
 (facts "longer task execution behaviour"
-  (let [job-100ms (t/task :1 (fn [_] (Thread/sleep 100)))]
+  (let [job-100ms (t/task :1 (fn [& _] (Thread/sleep 100)))]
     (do (t/exec! job-100ms :test) ;; Starting the execution
         (Thread/sleep 50)
         (fact "When the job is still running, it will be in the list of running jobs"
-          (t/running job-100ms) => '(:test))
+          (t/running job-100ms) => '({:tid :test :opts {}}))
         (Thread/sleep 200)
         (fact "When the job has finished, it will not appear in the list of running jobs"
           (t/running job-100ms) => '()))))
 
 (facts "multiple threading execution behaviour"
-  (let [job (t/task :job (fn [_] (Thread/sleep 200)))]
+  (let [job (t/task :job (fn [& _] (Thread/sleep 200)))]
     (do (t/exec! job :1) ;; Starting the execution
         (Thread/sleep 150)
         (t/exec! job :2) ;; Starting the execution 400ms after test1
         (Thread/sleep 10)
         (fact "All the jobs are running"
-          (t/running job) => '(:1 :2)
+          (t/running job) => '({:tid :1 :opts {}} {:tid :2 :opts {}})
           (t/last-exec job) => :2
           (t/last-successful job) => nil)
         (Thread/sleep 150)
         (fact "Job 1 will finish"
-          (t/running job) => '(:2)
+          (t/running job) => '({:tid :2 :opts {}})
           (t/last-successful job) => :1)
         (Thread/sleep 50)
         (fact "Job 1 will finish"
@@ -104,11 +93,11 @@
           (t/last-successful job) => :2))))
 
 (facts "kill!"
-  (let [job (t/task :job (fn [_] (Thread/sleep 2000000)))]
+  (let [job (t/task :job (fn [& _] (Thread/sleep 2000000)))]
     (do (t/exec! job :1) ;; Starting the execution
         (Thread/sleep 10)
         (fact "Check that the job is running"
-          (t/running job) => '(:1)
+          (t/running job) => '({:tid :1 :opts {}})
           (t/last-exec job) => :1
           (t/last-successful job) => nil)
         (t/kill! job :1)
@@ -118,12 +107,12 @@
           (t/last-successful job) => nil))))
 
 (facts "kill-all!"
-  (let [job (t/task :job (fn [_] (Thread/sleep 2000000)))]
-    (do (t/exec! job :1) ;; Starting the execution
+  (let [job (t/task :job (fn [_ opts] (Thread/sleep 2000000)))]
+    (do (t/exec! job :1 {:a1 1 :a2 2}) ;; Starting the execution
         (t/exec! job :2) ;; Starting the execution
         (Thread/sleep 30)
         (fact "Check that the job is running"
-          (t/running job) => '(:1 :2)
+          (t/running job) => '({:tid :1 :opts {:a1 1 :a2 2}} {:tid :2 :opts {}})
           (t/last-exec job) => :2
           (t/last-successful job) => nil)
         (t/kill-all! job)

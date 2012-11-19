@@ -2,15 +2,15 @@
   (require [hara.ova :as v]))
 
 (def REQUIRED-TASK-KEYS [:id :handler])
-(def ALL-TASK-KEYS [:id :desc :handler :enabled :args :running :last-exec :last-successful])
+(def ALL-TASK-KEYS [:id :desc :handler :running :last-exec :last-successful])
 
-(defn- has-id? [ova id]
-  (not (empty? (v/select ova [:id id]))))
+(defn- has-tid? [ova id]
+  (not (empty? (v/select ova [:tid id]))))
 
 (defn task
   ([m]
      (into
-      { :desc "" :enabled (ref true) :running (v/ova) :args {} :last-exec (ref nil) :last-successful (ref nil)}
+      {:desc "" :running (v/ova) :last-exec (ref nil) :last-successful (ref nil)}
       m))
 
   ([id handler & opts]
@@ -18,22 +18,10 @@
            (into
             (apply hash-map opts))
            (into
-            {:desc "" :enabled (ref true) :running (v/ova) :args {} :last-exec (ref nil) :last-successful (ref nil)}))))
+            {:desc "" :running (v/ova) :last-exec (ref nil) :last-successful (ref nil)}))))
 
 (defn is-task? [m]
   (every? true? (map #(contains? m %) ALL-TASK-KEYS)))
-
-(defn enable [task]
-  (dosync (alter (task :enabled) (constantly true)))
-  task)
-
-(defn disable [task]
-  (dosync (alter (task :enabled) (constantly false)))
-  task)
-
-(defn enabled? [task] @(:enabled task))
-
-(def disabled? (comp not enabled?))
 
 (defn last-exec [task]
   @(:last-exec task))
@@ -43,11 +31,11 @@
 
 (defn running [task]
   (->> (v/select (:running task))
-       (map :id)))
+       (map #(select-keys % [:tid :opts]))))
 
-(defn- register-thread [task tid thd]
-    (if (not (has-id? (:running task) tid))
-      (dosync (v/insert! (:running task) {:id tid :thread thd})
+(defn- register-thread [task tid thd opts]
+    (if (not (has-tid? (:running task) tid))
+      (dosync (v/insert! (:running task) {:tid tid :thread thd :opts opts})
               (ref-set (:last-exec task) tid))
       (throw (Exception. "Thread id already exists")))
     task)
@@ -60,42 +48,42 @@
      task)
   ([task tid success? start current timeout]
      (Thread/sleep 1) ;; Sleep to let the thread register itself
-     (if (has-id? (:running task) tid)
-       (dosync   (v/delete! (:running task) [:id tid])
+     (if (has-tid? (:running task) tid)
+       (dosync   (v/delete! (:running task) [:tid tid])
                  (if success?
                    (ref-set (:last-successful task) tid)))
          (if (> (- current start) timeout)
            (throw (Exception. "Thread id deregistration timedout. tid not registered"))
            (recur task tid success? start (System/nanoTime) timeout)))))
 
-(defn- exec-hook [hook tid args]
-  (if (fn? hook) (hook tid args) args))
+(defn- exec-hook [hook tid opts]
+  (if (fn? hook) (hook tid opts) opts))
 
-(defn- exec-fn [task tid handler args]
+(defn- exec-fn [task tid handler opts]
+  ;;(println "exec-fn" opts)
   (try
     (let [post   (:post-hook task)
-          arglst (mapcat identity (vec args))
-          result (apply handler tid arglst)]
-      (exec-hook post tid (assoc args :result result))
+          result (handler tid opts)]
+      (exec-hook post tid (assoc opts :result result))
       (deregister-thread task tid true))
     (catch Exception e)))
 
-(defn exec! [task tid]
+(defn exec! [task tid & [opts]]
+  ;;(println "exec!" opts)
   (cond
-    (disabled? task) (println "Task (" (:id task) ") is not enabled")
-
-    (has-id? (:running task) tid) (println "There is already a thread with id: " tid "running.")
-
+    (has-tid? (:running task) tid) (println "There is already a thread with tid: " tid "running.")
+    (not (or (nil? opts)
+             (instance? clojure.lang.IPersistentMap opts))) (throw (Exception. (str "The opts argument has to be a hashmap, not " opts)))
     :else
     (let [pre      (:pre-hook task)
           handler  (:handler task)
-          args     (:args task)
-          args     (exec-hook pre tid args)]
-      (register-thread task tid (future (exec-fn task tid handler args))))))
+          opts     (or opts {})
+          fopts    (exec-hook pre tid opts)]
+      (register-thread task tid (future (exec-fn task tid handler fopts)) fopts))))
 
 (defn kill! [task tid]
   {:pre [(is-task? task)]}
-  (let [thrds (v/select (:running task) [:id tid])]
+  (let [thrds (v/select (:running task) [:tid tid])]
     (if-let [thrd (first thrds)]
       (do (future-cancel (:thread thrd))
           (deregister-thread task tid false))
@@ -103,7 +91,7 @@
 
 (defn kill-all! [task]
   (dosync
-   (doseq [tid (map :id (v/select (:running task)))]
+   (doseq [tid (map :tid (v/select (:running task)))]
      (kill! task tid))))
 
 
@@ -119,8 +107,7 @@
 (defn <# [task]
   {:pre [(is-task? task)]}
   (->
-   (select-keys task [:id :desc :enabled :last-exec :last-successful])
+   (select-keys task [:id :desc :last-exec :last-successful])
    (assoc :running (running task)
-          :enabled @(:enabled task)
           :last-exec @(:last-exec task)
           :last-successful @(:last-successful task))))
