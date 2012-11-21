@@ -5,35 +5,24 @@
             [cronj.data.timer :as tm]
             [cronj.data.timetable :as tt]))
 
-(declare install-watch cronj-init)
+(declare install-watch)
 
-(defn cronj
-  ([]
-     (let [timetable (tt/timetable)
-           timer     (tm/timer)]
-       (install-watch timer timetable)
-       {:timer timer
-        :timetable timetable}))
-  ([& args]
-     (let [cnj      (cronj)
-           margs    (apply hash-map args)
-           interval (:interval margs)
-           entries  (:entries    margs)]
-       (if interval
-         (swap! (:timer cnj) assoc :interval interval))
-       (cronj-init cnj entries)
-       cnj)))
+(defn cronj [& args]
+  (let [timetable (tt/timetable)
+        timer     (tm/timer)
+        margs     (apply hash-map args)
+        interval  (:interval margs)
+        entries   (:entries  margs)]
+    ;;(println args entries)
+    (if interval
+      (swap! timer assoc :interval interval))
+    (doseq [tte (map tt/tt-entry entries)]
+      (tt/schedule-task timetable tte))
+    (install-watch timer timetable)
+    {:timer timer :timetable timetable}))
 
 (defmacro defcronj [name & args]
   `(def ~name (cronj ~@args)))
-
-(defn cronj-init [cnj entries]
-  (let [tk-fn    (fn [e] (tk/task (select-keys e [:id :handler :desc])))
-        tks      (map tk-fn entries)
-        tt-fn    (fn [e] (select-keys e [:enabled :opts :schedule]))
-        tts      (map tt-fn entries)]
-    (dorun
-     (map (fn [tk tt] (tt/schedule-task (:timetable cnj) tk tt)) tks tts))))
 
 (defn- install-watch [timer tt]
   (add-watch timer :time-watch
@@ -41,37 +30,38 @@
     [:last-check]
     (fn [_ rf _ _]
       (let [r @rf]
-        (tt/trigger! tt (:last-check-time r)))))))
+        (tt/trigger-time tt (:last-check-time r)))))))
 
-;;----------------------
+
+;;--------- timer functions --------------
+
+(defn start! [cnj] (tm/start! (:timer cnj)))
+
+(defn stop! [cnj] (tm/stop! (:timer cnj)))
+
+(defn stopped? [cnj] (tm/stopped? (:timer cnj)))
+
+(defn running? [cnj] (tm/running? (:timer cnj)))
+
+(defn uptime [cnj] (tm/uptime (:timer cnj)))
+
+;;--------- timetable functions -----------
+
 (defn schedule-task [cnj task schedule & [enabled? opts]]
   (tt/schedule-task (:timetable cnj) task schedule enabled? opts))
 
 (defn unschedule-task [cnj task-id]
   (tt/unschedule-task (:timetable cnj) task-id))
 
-(defn unschedule-all [cnj]
+(defn empty-tasks [cnj]
   (doseq [id (tt/task-ids (:timetable cnj))]
     (tt/unschedule-task (:timetable cnj) id)))
 
-(defn kill-threads [cnj task-id tid]
-  (tk/kill! (tt/get-task (:timetable cnj) task-id) tid))
-
-(defn kill-all-threads
-  ([cnj task-id] (tk/kill-all! (tt/get-task (:timetable cnj))))
-  ([cnj]
-     (doseq [id (tt/task-ids (:timetable cnj))]
-       (kill-all-threads cnj id))))
-
-;;----------------------
-(defn task-ids [cnj]
+(defn all-task-ids [cnj]
   (tt/task-ids (:timetable cnj)))
 
-(defn task-threads [cnj]
+(defn all-threads [cnj]
   (tt/task-threads (:timetable cnj)))
-
-(defn get-task [cnj task-id]
-  (tt/get-task (:timetable cnj) task-id))
 
 (defn enable-task [cnj task-id]
   (tt/enable-task (:timetable cnj) task-id))
@@ -85,18 +75,32 @@
 (defn task-disabled? [cnj task-id]
   (tt/task-disabled? (:timetable cnj) task-id))
 
-;;----------------------
-(defn start! [cnj] (tm/start! (:timer cnj)))
+;;---------- task related functions -------
 
-(defn stop! [cnj] (tm/stop! (:timer cnj)))
+(defn get-task [cnj task-id]
+  (:task (tt/get-task (:timetable cnj) task-id)))
 
-(defn stopped? [cnj] (tm/stopped? (:timer cnj)))
+(defn task-threads
+  ([cnj task-id]
+     (tk/running (get-task cnj task-id)))
+  ([cnj]
+     ()))
 
-(defn running? [cnj] (tm/running? (:timer cnj)))
+(defn kill-task-thread [cnj task-id tid]
+  (tk/kill! (get-task cnj task-id) tid))
+
+(defn kill-threads
+  ([cnj task-id]
+     (tk/kill-all! (get-task cnj task-id)))
+  ([cnj]
+     (doseq [id (all-task-ids cnj)]
+       (kill-threads cnj id))))
+
+;;--------- system level ----------
 
 (defn shutdown!! [cnj]
   (stop! cnj)
-  (kill-all-threads cnj))
+  (kill-threads cnj))
 
 (defn restart!! [cnj]
   (shutdown!! cnj)

@@ -8,8 +8,6 @@
 
 (facts "initial values"
   (let [mt (t/task :test-task (fn [& _]))]
-    (fact "the created task is accepted as a task"
-      (t/is-task?   mt) => true)
     (fact "there are no tasks running"
       (t/running    mt) => ())  ;;
     (fact "there should be no last executed id"
@@ -29,7 +27,7 @@
         mt1 (t/task :mt1 (fn [& _] (reset! mda 1)))
         mt2 (t/task :mt2 (fn [& _] (reset! mda 2)))]
 
-    (do (t/exec! mt1 :mt1-first) (Thread/sleep 100))      ;; time for thread to update
+    (do (Thread/sleep 50) (t/exec! mt1 :mt1-first) (Thread/sleep 50))      ;; time for thread to update
     (facts "mt1-first"
       (fact "data should be 1"
         (deref mda) => 1)
@@ -44,7 +42,7 @@
                        :last-exec :mt1-first
                        :last-successful :mt1-first}))
 
-    (do (t/exec! mt2 :mt2-first) (Thread/sleep 100))     ;; time for thread to update
+    (do (Thread/sleep 50) (t/exec! mt2 :mt2-first) (Thread/sleep 50))     ;; time for thread to update
     (facts "atfer mt2-first"
       (fact "data should be 2"
         (deref mda) => 2)
@@ -53,7 +51,7 @@
       (fact "last-successful should be :mt2-first"
         (t/last-successful mt2) => :mt2-first))
 
-    (do (t/exec! mt1 :mt1-second) (Thread/sleep 100))    ;; time for thread to update
+    (do (Thread/sleep 50) (t/exec! mt1 :mt1-second) (Thread/sleep 50))    ;; time for thread to update
     (facts "after mt1-second"
       (fact "data should be 1"
         (deref mda) => 1)

@@ -2,7 +2,7 @@
   (require [hara.ova :as v]))
 
 (def REQUIRED-TASK-KEYS [:id :handler])
-(def ALL-TASK-KEYS [:id :desc :handler :running :last-exec :last-successful])
+(def ALL-TASK-KEYS [:id :desc :handler :running :last-exec :last-successful :pre-hook :post-hook])
 
 (defn- has-tid? [ova id]
   (not (empty? (v/select ova [:tid id]))))
@@ -20,9 +20,6 @@
            (into
             {:desc "" :running (v/ova) :last-exec (ref nil) :last-successful (ref nil)}))))
 
-(defn is-task? [m]
-  (every? true? (map #(contains? m %) ALL-TASK-KEYS)))
-
 (defn last-exec [task]
   @(:last-exec task))
 
@@ -35,7 +32,7 @@
 
 (defn- register-thread [task tid thd opts]
     (if (not (has-tid? (:running task) tid))
-      (dosync (v/insert! (:running task) {:tid tid :thread thd :opts opts})
+      (dosync (v/insert (:running task) {:tid tid :thread thd :opts opts})
               (ref-set (:last-exec task) tid))
       (throw (Exception. "Thread id already exists")))
     task)
@@ -49,7 +46,7 @@
   ([task tid success? start current timeout]
      (Thread/sleep 1) ;; Sleep to let the thread register itself
      (if (has-tid? (:running task) tid)
-       (dosync   (v/delete! (:running task) [:tid tid])
+       (dosync   (v/delete (:running task) [:tid tid])
                  (if success?
                    (ref-set (:last-successful task) tid)))
          (if (> (- current start) timeout)
@@ -82,7 +79,6 @@
       (register-thread task tid (future (exec-fn task tid handler fopts)) fopts))))
 
 (defn kill! [task tid]
-  {:pre [(is-task? task)]}
   (let [thrds (v/select (:running task) [:tid tid])]
     (if-let [thrd (first thrds)]
       (do (future-cancel (:thread thrd))
@@ -94,7 +90,6 @@
    (doseq [tid (map :tid (v/select (:running task)))]
      (kill! task tid))))
 
-
 (defn reinit! [task]
   (dosync
    (kill-all! task)
@@ -105,7 +100,6 @@
   task)
 
 (defn <# [task]
-  {:pre [(is-task? task)]}
   (->
    (select-keys task [:id :desc :last-exec :last-successful])
    (assoc :running (running task)

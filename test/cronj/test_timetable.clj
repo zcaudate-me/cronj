@@ -7,15 +7,12 @@
               [cronj.data.task :as tk]
               [cronj.data.timetable :as tt] :reload))
 
-
 (facts "timesheet scheduling"
   (let [ttb (tt/timetable)
         tk1 (tk/task :1 (fn [& _]))
         tk2 (tk/task :2 (fn [& _]))]
     (fact "initialization"
-      ttb => (is-ova)
-      tk1 => tk/is-task?
-      tk2 => tk/is-task?)
+      ttb => (is-ova))
 
     (tt/schedule-task ttb tk1 "* * * * * * *")
     (fact "should have 1 task" (count ttb) => 1)
@@ -56,23 +53,23 @@
       (tt/task-enabled? ttb :1) => true
       (tt/task-enabled? ttb :2) => true)
 
-    (tt/trigger! ttb dt1) (Thread/sleep 50)
+    (tt/trigger-time ttb dt1) (Thread/sleep 50)
     (fact "out should be :1"
       out => (is-atom :1))
 
-    (tt/trigger! ttb dt2) (Thread/sleep 50)
+    (tt/trigger-time ttb dt2) (Thread/sleep 50)
     (fact "out should be :2"
       out => (is-atom :2))
 
     (tt/disable-task ttb :1)
-    (tt/trigger! ttb dt1) (Thread/sleep 50)
+    (tt/trigger-time ttb dt1) (Thread/sleep 50)
     (fact "out should be :2 as tk1 is disabled"
       out => (is-atom :2)
       (tt/task-enabled? ttb :1) => false
       (tt/task-enabled? ttb :2) => true)
 
     (tt/enable-task ttb :1)
-    (tt/trigger! ttb dt1) (Thread/sleep 50)
+    (tt/trigger-time ttb dt1) (Thread/sleep 50)
     (fact "out should be :1 as tk1 is enabled"
       out => (is-atom :1)
       (tt/task-enabled? ttb :1) => true
@@ -90,11 +87,11 @@
       (count ttb) => 1
       (tt/task-threads ttb) => [{:id :1 :running []}])
 
-    (tt/trigger! ttb dt1) (Thread/sleep 10)
+    (tt/trigger-time ttb dt1) (Thread/sleep 10)
     (fact "one thread should be running"
       (tt/task-threads ttb) => [{:id :1 :running [{:tid dt1 :opts {}}]}])
 
-    (tt/trigger! ttb dt2) (Thread/sleep 10)
+    (tt/trigger-time ttb dt2) (Thread/sleep 10)
     (fact "two threads should be running"
       (tt/task-threads ttb) => [{:id :1 :running [{:tid dt1 :opts {}} {:tid dt2 :opts {}}]}])
 

@@ -7,6 +7,7 @@
 
 (defn timer [& [interval]]
   (atom {:thread nil
+         :start-time nil
          :last-check nil
          :last-check-time nil
          :interval (or interval DEFAULT-INTERVAL)}))
@@ -18,9 +19,9 @@
     (cond
       (or (not= last-arr current-arr)
           (nil? last-arr))
-      (do
-        (swap! timer assoc :last-check-time current-time)
-        (swap! timer assoc :last-check current-arr))
+      (swap! timer assoc
+             :last-check-time current-time
+             :last-check current-arr)
 
       :else
       (let [interval (@timer :interval)
@@ -42,19 +43,31 @@
 
 (def running? (comp not stopped?))
 
+(defn uptime [timer]
+  (let [start   (:start-time @timer)
+        current (:last-check-time @timer)]
+    (if (and start current)
+      (- (clj-time.coerce/to-long current)
+         (clj-time.coerce/to-long start)))))
+
 (defn start!
   ([timer] (start! timer DEFAULT-INTERVAL))
   ([timer interval]
     (cond
       (stopped? timer)
-      (do (swap! timer assoc :interval interval)
-          (swap! timer assoc :thread (future (timer-fn timer true))))
+      (swap! timer assoc
+             :start-time (lt/local-now)
+             :interval interval
+             :thread (future (timer-fn timer true)))
       :else
       (println "The timer is already running."))))
 
 (defn stop! [timer]
   (if-not (stopped? timer)
-    (swap! timer update-in [:thread] future-cancel)
+    (swap! timer (fn [m]
+                   (-> (update-in m [:thread] future-cancel)
+                       (assoc :thread nil
+                              :start-time nil))))
     (println "The timer is already stopped.")))
 
 (defn restart!
