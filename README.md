@@ -65,12 +65,12 @@ The only novelity that `cronj` brings to the table is the fact that when you are
      - Spawn as many threads as needed. tasks started at earlier can exist alongside tasks started at later.
      - List tasks and running theads
      - Normal and abnormal termination: 
-                 kill a running thread
-                 kill all running threads in a task
-                 kill all threads
-                 disable task but let running threads finish
-                 stop cronj but let running threads finish
-                 shutdown cronj, kill all running threads
+         - kill a running thread
+         - kill all running threads in a task
+         - kill all threads
+         - disable task but let running threads finish
+         - stop cronj but let running threads finish
+         - shutdown cronj, kill all running threads
 
 
 ### Usage
