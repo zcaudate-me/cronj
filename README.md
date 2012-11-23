@@ -10,13 +10,18 @@ This is *another* cron-inspired task-scheduling library. I have found many sched
 
 The first two follow the cron convention. The "task" (also called a "job") can only be scheduled at whole minute intervals. [at-at](https://github.com/overtone/at-at) has milli-second resolution, but was limited in the number of threads that have to be predetermined. It was good for looking after tasks that did not overlap between calls but not for tasks that may take an arbitarily long time. [monotony](https://github.com/aredington/monotony) and [quartzite](https://github.com/michaelklishin/quartzite) are both very cool and worth having a look.
 
-Why use `cronj` if there are so many others like it? Well, `cronj` solves a really annoying problem I ran into with my multithreaded applications - Task Synchronisation.
+Why use `cronj` if there are so many others like it? Well, `cronj` solves a really annoying problem I ran into with my multithreaded applications - "Task Synchronisation".
 
-For example: you might have three tasks scheduled to trigger at a certain point in time: a task that performs a calculation and writes to the database and two other tasks that performs different http calls and writes the database. All will start and end at different times in a multithreaded environment. If you wanted to retrospectively reason about how all three events may be synced, you want to pass the same time token to each of the handlers as opposed to let each handler call their own `getTime` function. 
+For example, you have three tasks scheduled to run at a same time: 
+   - a task that performs some calculation and writes to the database
+   - a task that performs a http call and writes to the database
+   - a task that loads a series of files, manipulates them into one file, saves it somewhere, then writes the location to the database.
 
-`cronj` was built to make this trivial.
+All these tasks will start and end at different times in a multithreaded environment. If you wanted to retrospectively reason about how all three events may be synced, you want to pass the same time token to each of the task handlers when they are triggered
 
-The only real difference that `cronj` brings to the table is the fact that when you are defining task handlers, the function that gets triggered whenever have to accept a timestamp of when they are called. This one little addition ends up being really handy and solves a whole class of problems. The timestamp essentially acts as a coordinate that 'syncs' different handlers that are scheduled to trigger at the same time and so it makes coordinating task-handlers in a multithreaded environment less painful.
+`cronj` was built to support this style of programming.
+
+The only novelity that `cronj` brings to the table is the fact that when you are defining task handlers, the function that gets triggered whenever have to accept a timestamp of when they are called. This one little addition ends up being really handy and solves a whole class of problems. The timestamp essentially acts as a coordinate that 'syncs' different handlers that are scheduled to trigger at the same time and so it makes coordinating task-handlers in a multithreaded environment less painful.
 
 ## Features
   - Easy to Use: `cronj` tasks are defined as maps, schedules are defined as strings. It does get any easier!
