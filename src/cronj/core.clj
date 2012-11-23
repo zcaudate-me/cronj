@@ -5,7 +5,10 @@
             [cronj.data.timer :as tm]
             [cronj.data.timetable :as tt]))
 
-(declare install-watch)
+(declare install-watch cronj)
+
+(defmacro defcronj [name & args]
+  `(def ~name (cronj ~@args)))
 
 (defn cronj [& args]
   (let [timetable (tt/timetable)
@@ -20,9 +23,6 @@
       (tt/schedule-task timetable tte))
     (install-watch timer timetable)
     {:timer timer :timetable timetable}))
-
-(defmacro defcronj [name & args]
-  `(def ~name (cronj ~@args)))
 
 (defn- install-watch [timer tt]
   (add-watch timer :time-watch

@@ -8,15 +8,34 @@ This is *another* cron-inspired task-scheduling library. I have found many sched
   - [monotony](https://github.com/aredington/monotony)
   - [quartzite](https://github.com/michaelklishin/quartzite)
 
-The first two follow the cron convention. The "task" (also called a "job") can only be scheduled at whole minute intervals. [at-at](https://github.com/overtone/at-at) has milli-second resolution, but was limited in the number of threads that have to be predetermined. It was good for looking after tasks that did not overlap between calls but not for tasks that may take an arbitarily long time. [monotony](https://github.com/aredington/monotony) and [quartzite](https://github.com/michaelklishin/quartzite) are both very cool.
+The first two follow the cron convention. The "task" (also called a "job") can only be scheduled at whole minute intervals. [at-at](https://github.com/overtone/at-at) has milli-second resolution, but was limited in the number of threads that have to be predetermined. It was good for looking after tasks that did not overlap between calls but not for tasks that may take an arbitarily long time. [monotony](https://github.com/aredington/monotony) and [quartzite](https://github.com/michaelklishin/quartzite) are both very cool and worth having a look.
 
+Why use `cronj` if there are so many others like it? Well, `cronj` solves a really annoying problem I ran into with my multithreaded applications - Task Synchronisation.
+
+For example: you might have three tasks scheduled to trigger at a certain point in time: a task that performs a calculation and writes to the database and two other tasks that performs different http calls and writes the database. All will start and end at different times in a multithreaded environment. If you wanted to retrospectively reason about how all three events may be synced, you want to pass the same time token to each of the handlers as opposed to let each handler call their own `getTime` function. 
+
+`cronj` was built to make this trivial.
+
+The only real difference that `cronj` brings to the table is the fact that when you are defining task handlers, the function that gets triggered whenever have to accept a timestamp of when they are called. This one little addition ends up being really handy and solves a whole class of problems. The timestamp essentially acts as a coordinate that 'syncs' different handlers that are scheduled to trigger at the same time and so it makes coordinating task-handlers in a multithreaded environment less painful.
 
 ## Features
-  - allows scheduled tasks to start on the second
-  - all functions have been thoroughly tested (starting from 0.6.1)
-  - launch tasks with per-second interval having high system-time accuracy without wasting system resourcs.
-  - would spawn as many threads as needed, so that tasks started at earlier intervals could exist along side tasks started at later intervals.
-  - an additional design requirement required that task handlers are passed a date-time object, so that the handler itself is aware of the time when it was initiated. (something that all libraries do not explicitly support)
+  - Easy to Use: `cronj` tasks are defined as maps, schedules are defined as strings. It does get any easier!
+  - Easy to Hack: less than 500 lines of code, fully implemented in clojure, minimal dependencies. 
+  - Easy to Understand: Functionality is broken up into modular components and are thoroughly tested
+     - Task Thread Control (cronj.data.task)
+     - Task Scheduling Control (cronj.data.timetable)
+     - Timer (cronj.data.timer)
+  - Easy to Control
+     - Launch tasks with per-second interval having high system-time accuracy without wasting system resourcs.
+     - Spawn as many threads as needed. tasks started at earlier can exist alongside tasks started at later.
+     - Look at what is running: (all-task-ids <cnj>), (all-threads <cnj>)
+     - Allows normal and abnormal termination: 
+                 kill a running thread: (kill-task-thread <cnj> <task-id> <thread-id>)
+                 kill all running threads in a task: (kill-threads <cnj> <task-id>)
+                 kill all threads: (kill-threads <cnj>)
+                 disable task but let running threads finish: (disable-task <cnj> <task-id>)  
+                 stop cronj but let running threads finish: (stop! <cnj>)
+                 shutdown cronj, kill all running threads: (shutdown! <cnj>)
 
 ### Installation:
 
@@ -24,25 +43,8 @@ In project.clj, add to dependencies:
 
      [cronj "0.6.1"]
 
-
-### Breaking Changes:
-
-#### v0.6.1
-
-A complete rewrite following principles popularised by [Misko Hevery](http://misko.hevery.com/) through his videos on [google tech talks](https://www.google.com/search?btnG=1&pws=0&q=misko+hevery+google+tech+talks)
-- using hara 0.6.1 for a shared array structure, which is fully STM conversant.
-- got rid of all global objects
-- a `defcronj` macro for more declarative style of programming
-- cleaner seperation of internal functionality so that all components can be tested individually
-- the handler now has to take a date-time AND options arguments
-- Tests written for all library code:
-        - cronj.data.tab
-        - cronj.data.task
-        - cronj.data.timetable
-        - cronj.data.timer
-        - cronj.core
-
 ### Usage
+
     (require '[cronj.core :as cj])
     (cj/defcronj cnj
       :entries [{:id       :t1
@@ -145,39 +147,36 @@ Cronj is seperated into three basic concepts:
 
 - A Timetable to strictly schedule and unschedule tasks according to a `tab` schedule as well as to trigger tasks.
 
-
 <pre>
-
- cronj                schedule
- --------------       +-------------------------+
- timetable watches    |  "* 8 /2 7-9 2,3 * *"   |
- the timer and        +-------------------------+
- triggers tasks       |  :sec    [:*]           |
- to execute at        |  :min    [:# 8]         |
- the scheduled time   |  :hour   [:| 2]         |
-                      |  :dayw   [:- 7 9]       |
-                      |  :daym   [:# 2] [:# 3]  |
-                      |  :month  [:*]           |
-                      |  :year   [:*]           |
-                      +-----------+-------------+
-task                              |                        XXXXXXXXX
-+-----------------+   +-----------+-----+                XX         XX
-|:id              |   |           |     |\             XX  timer      XX
-|:desc            +---+-+:task    |     | \           X                 X
-|:handler         |   |  :schedule+     |  \         X     :start-time   X
-|:pre-hook        |   |  :enabled       | entry      X     :thread       X+----+
-|:post-hook       |   |  :opts          |    `.      X     :last-check   X     |
-|:enabled         |   |                 |      \      X    :interval    X      |
-|:args            |   _-------._--------,       \      XX             XX       |
-|:running         |    `-._     `..      `.      \       XX         XX         +
-|:last-exec       |        `-._    `-._    `.     \        XXXXXXXXX         watch
-|:last-successful |            `-._    `-._  `.    `.                          +
-+----------+------+                `-._    `-. `.    \                         |
-                        +----+----+----`-._-+-`-.`.--->----+----+----+----+----+----+
-                        |    |    |    |   `-..  | `. |    |    |    |    |    |    |
-                        +----+----+----+----+--`-.---'+----+----+----+----+----+----+
-                                                                          timetable
-
+       cronj                schedule
+       --------------       +-------------------------+
+       timetable watches    |  "* 8 /2 7-9 2,3 * *"   |
+       the timer and        +-------------------------+
+       triggers tasks       |  :sec    [:*]           |
+       to execute at        |  :min    [:# 8]         |
+       the scheduled time   |  :hour   [:| 2]         |
+                            |  :dayw   [:- 7 9]       |
+                            |  :daym   [:# 2] [:# 3]  |
+                            |  :month  [:*]           |
+                            |  :year   [:*]           |
+                            +-----------+-------------+
+      task                              |                        XXXXXXXXX
+      +-----------------+   +-----------+-----+                XX         XX
+      |:id              |   |           |     |\             XX  timer      XX
+      |:desc            +---+-+:task    |     | \           X                 X
+      |:handler         |   |  :schedule+     |  \         X     :start-time   X
+      |:pre-hook        |   |  :enabled       | entry      X     :thread       X+----+
+      |:post-hook       |   |  :opts          |    `.      X     :last-check   X     |
+      |:enabled         |   |                 |      \      X    :interval    X      |
+      |:args            |   _-------._--------,       \      XX             XX       |
+      |:running         |    `-._     `..      `.      \       XX         XX         +
+      |:last-exec       |        `-._    `-._    `.     \        XXXXXXXXX         watch
+      |:last-successful |            `-._    `-._  `.    `.                          +
+      +----------+------+                `-._    `-. `.    \                         |
+                              +----+----+----`-._-+-`-.`.--->----+----+----+----+----+----+
+                              |    |    |    |   `-..  | `. |    |    |    |    |    |    |
+                              +----+----+----+----+--`-.---'+----+----+----+----+----+----+
+                                                                                timetable
 </pre>
 
 
@@ -212,6 +211,23 @@ Tests
 - Core (More use cases and multi-threaded examples)
 - Documentation of cronj.core functions and more use cases
 
+
+### Breaking Changes!:
+
+#### v0.6.1
+
+Quite a big overhaul following principles popularised by [Misko Hevery](http://misko.hevery.com/) through his videos on [google tech talks](https://www.google.com/search?btnG=1&pws=0&q=misko+hevery+google+tech+talks)
+- using hara 0.6.1 for a shared array structure, which is fully STM conversant.
+- got rid of all global objects
+- a `defcronj` macro for more declarative style of programming
+- cleaner seperation of internal functionality so that all components can be tested individually
+- the handler now has to take a date-time AND options arguments
+- Tests written for all library code:
+        - cronj.data.tab
+        - cronj.data.task
+        - cronj.data.timetable
+        - cronj.data.timer
+        - cronj.core
 
 #### v0.5.2
 
