@@ -1,5 +1,35 @@
 # cronj
 
+### Installation:
+
+In project.clj, add to dependencies:
+
+     [cronj "0.6.1"]
+
+### Quick Start
+
+    (require '[cronj.core :as cj])
+    (cj/defcronj cnj
+      :entries [{:id       :t1
+                 :handler  (fn [dt opts] (println "Task 1: " dt))
+                 :schedule "0-60/2 * * * * * *"}
+                {:id       :t2
+                 :handler  (fn [dt opts] (println "Task 2: " dt))
+                 :schedule "1-60/2 * * * * * *"}])
+
+    (cj/start! cnj)
+
+        ;; wait for outputs ......
+        ;;> Task 1:  #DateTime 2012-09-17T14:10:24.000+10:00
+        ;;> Task 2:  #DateTime 2012-09-17T14:10:25.001+10:00
+        ;;> Task 1:  #DateTime 2012-09-17T14:10:26.000+10:00
+        ;;> Task 2:  #DateTime 2012-09-17T14:10:27.001+10:00
+        ;;> Task 1:  #DateTime 2012-09-17T14:10:28.000+10:00
+
+    ;; get bored and stop
+    (cj/stop! cnj)
+
+### Introduction
 This is *another* cron-inspired task-scheduling library. I have found many scheduling libraries for clojure:
 
   - [cron4j](http://www.sauronsoftware.it/projects/cron4j)
@@ -41,35 +71,6 @@ The only novelity that `cronj` brings to the table is the fact that when you are
                  disable task but let running threads finish: (disable-task <cnj> <task-id>)  
                  stop cronj but let running threads finish: (stop! <cnj>)
                  shutdown cronj, kill all running threads: (shutdown! <cnj>)
-
-### Installation:
-
-In project.clj, add to dependencies:
-
-     [cronj "0.6.1"]
-
-### Usage
-
-    (require '[cronj.core :as cj])
-    (cj/defcronj cnj
-      :entries [{:id       :t1
-                 :handler  (fn [dt opts] (println "Task 1: " dt))
-                 :schedule "0-60/2 * * * * * *"}
-                {:id       :t2
-                 :handler  (fn [dt opts] (println "Task 2: " dt))
-                 :schedule "1-60/2 * * * * * *"}])
-
-    (cj/start! cnj)
-
-        ;; wait for outputs ......
-        ;;> Task 1:  #DateTime 2012-09-17T14:10:24.000+10:00
-        ;;> Task 2:  #DateTime 2012-09-17T14:10:25.001+10:00
-        ;;> Task 1:  #DateTime 2012-09-17T14:10:26.000+10:00
-        ;;> Task 2:  #DateTime 2012-09-17T14:10:27.001+10:00
-        ;;> Task 1:  #DateTime 2012-09-17T14:10:28.000+10:00
-
-    ;; get bored and stop
-    (cj/stop! cnj)
 
 
 ### Arguments
