@@ -1,12 +1,12 @@
 # cronj
 
-### Installation:
+## Installation:
 
 In project.clj, add to dependencies:
 
      [cronj "0.6.1"]
 
-### Quick Start
+## Quick Start
 
     (require '[cronj.core :as cj])
     (cj/defcronj cnj
@@ -21,15 +21,15 @@ In project.clj, add to dependencies:
 
         ;; wait for outputs ......
         ;;> Task 1:  #DateTime 2012-09-17T14:10:24.000+10:00
-        ;;> Task 2:  #DateTime 2012-09-17T14:10:25.001+10:00
+        ;;> Task 2:  #DateTime 2012-09-17T14:10:25.000+10:00
         ;;> Task 1:  #DateTime 2012-09-17T14:10:26.000+10:00
-        ;;> Task 2:  #DateTime 2012-09-17T14:10:27.001+10:00
+        ;;> Task 2:  #DateTime 2012-09-17T14:10:27.000+10:00
         ;;> Task 1:  #DateTime 2012-09-17T14:10:28.000+10:00
 
     ;; get bored and stop
     (cj/stop! cnj)
 
-### Introduction
+## Introduction
 This is *another* cron-inspired task-scheduling library. I have found many scheduling libraries for clojure:
 
   - [cron4j](http://www.sauronsoftware.it/projects/cron4j)
@@ -63,18 +63,18 @@ The only novelity that `cronj` brings to the table is the fact that when you are
   - Easy to Control
      - Launch tasks with per-second interval having high system-time accuracy without wasting system resourcs.
      - Spawn as many threads as needed. tasks started at earlier can exist alongside tasks started at later.
-     - Look at what is running: (all-task-ids <cnj>), (all-threads <cnj>)
-     - Allows normal and abnormal termination: 
-                 kill a running thread: (kill-task-thread <cnj> <task-id> <thread-id>)
-                 kill all running threads in a task: (kill-threads <cnj> <task-id>)
-                 kill all threads: (kill-threads <cnj>)
-                 disable task but let running threads finish: (disable-task <cnj> <task-id>)  
-                 stop cronj but let running threads finish: (stop! <cnj>)
-                 shutdown cronj, kill all running threads: (shutdown! <cnj>)
+     - List tasks and running theads
+     - Normal and abnormal termination: 
+                 kill a running thread
+                 kill all running threads in a task
+                 kill all threads
+                 disable task but let running threads finish
+                 stop cronj but let running threads finish
+                 shutdown cronj, kill all running threads
 
 
-### Arguments
-Additional arguments can be added to the handler through the opts argument
+### Usage
+task customisation options can be added to the handler through the opts argument
 
     (cj/defcronj cnj
       :entries [{:id "opts"
@@ -87,7 +87,7 @@ Additional arguments can be added to the handler through the opts argument
         ;; more outputs ......
         ;;> Hello There :  #DateTime 2012-09-17T14:53:10.000+10:00
         ;;> Hello There :  #DateTime 2012-09-17T14:53:12.000+10:00
-        ;;> Hello There :  #DateTime 2012-09-17T14:53:14.001+10:00
+        ;;> Hello There :  #DateTime 2012-09-17T14:53:14.000+10:00
 
     ;; stop outputs
     (cj/stop! cnj)
@@ -194,14 +194,20 @@ Tasks can be added and removed on the fly through the `cronj` library interface 
     (cj/defcronj cnj
       :entries [{:id       :long-running
                  :handler  (fn [dt opts] (Thread/sleep 30000))
-                 :schedule "0-60/5 * * * * * *"}])
+                 :schedule "0-60/5 * * * * * *"}
+                 :opts {:foo "bar"}])
 
     (cj/start! cnj)
 
     (cj/task-threads cnj :long-running)
 
         ;; list of running threads
-        ;;> ({:opts {}, :tid #<DateTime 2012-11-21T14:03:55.000+11:00>} {:opts {}, :tid #<DateTime 2012-11-21T14:04:00.000+11:00>} {:opts {}, :tid #<DateTime 2012-11-21T14:04:05.000+11:00>} {:opts {}, :tid #<DateTime 2012-11-21T14:04:10.000+11:00>} {:opts {}, :tid #<DateTime 2012-11-21T14:04:15.000+11:00>} {:opts {}, :tid #<DateTime 2012-11-21T14:04:20.000+11:00>})
+        ;;> ({:opts {:foo "bar"}, :tid #<DateTime 2012-11-21T14:03:55.000+11:00>} 
+        ;;   {:opts {:foo "bar"}, :tid #<DateTime 2012-11-21T14:04:00.000+11:00>} 
+        ;;   {:opts {:foo "bar"}, :tid #<DateTime 2012-11-21T14:04:05.000+11:00>} 
+        ;;   {:opts {:foo "bar"}, :tid #<DateTime 2012-11-21T14:04:10.000+11:00>} 
+        ;;   {:opts {:foo "bar"}, :tid #<DateTime 2012-11-21T14:04:15.000+11:00>} 
+        ;;   {:opts {:foo "bar"}, :tid #<DateTime 2012-11-21T14:04:20.000+11:00>})
 
     (cj/kill-threads cnj)
     (cj/task-threads cnj :long-running)
