@@ -53,6 +53,49 @@ All these tasks will start and end at different times in a multithreaded environ
 
 The only novelity that `cronj` brings to the table is the fact that when you are defining task handlers, the function that gets triggered whenever have to accept a timestamp of when they are called. This one little addition ends up being really handy and solves a whole class of problems. The timestamp essentially acts as a coordinate that 'syncs' different handlers that are scheduled to trigger at the same time and so it makes coordinating task-handlers in a multithreaded environment less painful.
 
+
+## Overview
+
+`cronj` is seperated into three basic concepts:
+
+- `tasks` are records that provide information about each task and keeps track of the running instances that has been sw.
+- `timer` to check and update the current time.
+- `timetable` to keep all task schedules
+
+<pre>
+       cronj                schedule
+       --------------       +-------------------------+
+       timetable watches    |  "* 8 /2 7-9 2,3 * *"   |
+       the timer and        +-------------------------+
+       triggers tasks       |  :sec    [:*]           |
+       to execute at        |  :min    [:# 8]         |
+       the scheduled time   |  :hour   [:| 2]         |
+                            |  :dayw   [:- 7 9]       |
+                            |  :daym   [:# 2] [:# 3]  |
+                            |  :month  [:*]           |
+                            |  :year   [:*]           |
+                            +-----------+-------------+
+      task                              |                        XXXXXXXXX
+      +-----------------+   +-----------+-----+                XX         XX
+      |:id              |   |           |     |\             XX  timer      XX
+      |:desc            +---+-+:task    |     | \           X                 X
+      |:handler         |   |  :schedule+     |  \         X     :start-time   X
+      |:pre-hook        |   |  :enabled       | entry      X     :thread       X+----+
+      |:post-hook       |   |  :opts          |    `.      X     :last-check   X     |
+      |:enabled         |   |                 |      \      X    :interval    X      |
+      |:args            |   _-------._--------,       \      XX             XX       |
+      |:running         |    `-._     `..      `.      \       XX         XX         +
+      |:last-exec       |        `-._    `-._    `.     \        XXXXXXXXX         watch
+      |:last-successful |            `-._    `-._  `.    `.                          +
+      +----------+------+                `-._    `-. `.    \                         |
+                              +----+----+----`-._-+-`-.`.--->----+----+----+----+----+----+
+                              |    |    |    |   `-..  | `. |    |    |    |    |    |    |
+                              +----+----+----+----+--`-.---'+----+----+----+----+----+----+
+                                                                                timetable
+</pre>
+
+Tasks can be added and removed on the fly through the `cronj` library interface and the `cronj` will then keep an eye out on the time. At the time that a task has been scheduled to start, the task handler will be launched in another thread. The actual polling loop is quite efficient and will only poll a maximum of twice every second with a 1ms timing error. Future improvements to the loop will hope to preempt the time that tasks should start and sleep until it is necessary to wake up.
+
 ## Features
   - Easy to Use: `cronj` tasks are defined as maps, schedules are defined as strings. It does get any easier!
   - Easy to Hack: less than 500 lines of code, fully implemented in clojure, minimal dependencies. 
@@ -105,7 +148,7 @@ task customisation options can be added to the handler through the opts argument
       :entries [{:id "every-5-seconds-2"
                  :desc "prints out the date every 5 seconds between 32 and 60 seconds"
                  :handler (fn [dt opts] (println dt))
-                 :schedule "32-60/5 * * * * * *"})
+                 :schedule "32-60/5 * * * * * *"}])
 
     (cj/defcronj cnj
       :entries [{:id "every-5-seconds-2"
@@ -113,7 +156,7 @@ task customisation options can be added to the handler through the opts argument
                         9th aand 10th minute of every hour on every Friday
                         from June to August between the year 2012 to 2020"
                  :handler (fn [dt opts] (println dt))
-                 :schedule "/5  9,10  * 5 * 6-8 2012-2020"})
+                 :schedule "/5  9,10  * 5 * 6-8 2012-2020"}])
 
 ### Hooks
 For additional control like cleanup and other side-effecting operations, post and pre hooks can also be set.
@@ -131,7 +174,7 @@ For additional control like cleanup and other side-effecting operations, post an
                  :post-hook (fn [dt opts]
                                (println  "Instance:" dt "- In post-hook, opts: " args))
                  :opts      {:a "sample-a" :b "sample-a"}
-                 :schedule  "/5 * * * * * *"})
+                 :schedule  "/5 * * * * * *"}])
 
     (cj/start! cnj)
     ;;> #DateTime 2012-11-21T13:10:40.000+11:00 - pre-hook, opts: {:a sample-a, :b sample-a}
@@ -140,56 +183,10 @@ For additional control like cleanup and other side-effecting operations, post an
 
     (cj/stop! cnj)
 
-Thats all really... now go write your own handlers!
-
-
-### Overview
-
-Cronj is seperated into three basic concepts:
-
-- Tasks are records that provide information about the task and keeps track of the running instances that has been sw.
-
-- A Timer to keep the time.
-
-- A Timetable to strictly schedule and unschedule tasks according to a `tab` schedule as well as to trigger tasks.
-
-<pre>
-       cronj                schedule
-       --------------       +-------------------------+
-       timetable watches    |  "* 8 /2 7-9 2,3 * *"   |
-       the timer and        +-------------------------+
-       triggers tasks       |  :sec    [:*]           |
-       to execute at        |  :min    [:# 8]         |
-       the scheduled time   |  :hour   [:| 2]         |
-                            |  :dayw   [:- 7 9]       |
-                            |  :daym   [:# 2] [:# 3]  |
-                            |  :month  [:*]           |
-                            |  :year   [:*]           |
-                            +-----------+-------------+
-      task                              |                        XXXXXXXXX
-      +-----------------+   +-----------+-----+                XX         XX
-      |:id              |   |           |     |\             XX  timer      XX
-      |:desc            +---+-+:task    |     | \           X                 X
-      |:handler         |   |  :schedule+     |  \         X     :start-time   X
-      |:pre-hook        |   |  :enabled       | entry      X     :thread       X+----+
-      |:post-hook       |   |  :opts          |    `.      X     :last-check   X     |
-      |:enabled         |   |                 |      \      X    :interval    X      |
-      |:args            |   _-------._--------,       \      XX             XX       |
-      |:running         |    `-._     `..      `.      \       XX         XX         +
-      |:last-exec       |        `-._    `-._    `.     \        XXXXXXXXX         watch
-      |:last-successful |            `-._    `-._  `.    `.                          +
-      +----------+------+                `-._    `-. `.    \                         |
-                              +----+----+----`-._-+-`-.`.--->----+----+----+----+----+----+
-                              |    |    |    |   `-..  | `. |    |    |    |    |    |    |
-                              +----+----+----+----+--`-.---'+----+----+----+----+----+----+
-                                                                                timetable
-</pre>
-
-
-Tasks can be added and removed on the fly through the `cronj` library interface and the library will then keep an eye out on the time. At the correct time that a task has been scheduled to start, the task handler will be launched in another thread. The actual polling loop is quite efficient and will only poll a maximum of twice every second with a 1ms timing error. Future improvements to the loop will hope to preempt the time that tasks should start and sleep until it is necessary to wake up.
-
 
 ### Long running tasks
+
+This is an example where the next task has been spawned before the previous one has finished.
 
     (cj/defcronj cnj
       :entries [{:id       :long-running
@@ -216,6 +213,9 @@ Tasks can be added and removed on the fly through the `cronj` library interface 
         ;;> () 
 
     (cj/stop! cnj)
+
+Thats all really... now go write your own handlers!
+
 
 ## TODO:
 
