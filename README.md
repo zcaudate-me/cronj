@@ -136,7 +136,8 @@ task customisation options can be added to the handler through the opts argument
     (cj/stop! cnj)
 
 
-### More Examples
+### More Tab Examples
+This is to show the flexibility of scheduling using `cronj`
 
     (cj/defcronj cnj
       :entries [{:id "every-5-seconds-1"
@@ -159,7 +160,7 @@ task customisation options can be added to the handler through the opts argument
                  :schedule "/5  9,10  * 5 * 6-8 2012-2020"}])
 
 ### Hooks
-For additional control like cleanup and other side-effecting operations, post and pre hooks can also be set.
+For additional control like cleanup and other side-effecting operations, pre- and post-hooks can also be set for controlling side-effects.
 
     (cj/defcronj cnj
       :entries [{:id        "hook-example"
@@ -229,7 +230,7 @@ Tests
 #### v0.6.1
 
 Quite a big overhaul following principles popularised by [Misko Hevery](http://misko.hevery.com/) through his videos on [google tech talks](https://www.google.com/search?btnG=1&pws=0&q=misko+hevery+google+tech+talks)
-- using hara 0.6.1 for a shared array structure, which is fully STM conversant.
+- using [hara](https://github.com/zcaudate/hara) for a shared array structure, which is now fully STM conversant.
 - got rid of all global objects
 - a `defcronj` macro for more declarative style of programming
 - cleaner seperation of internal functionality so that all components can be tested individually
