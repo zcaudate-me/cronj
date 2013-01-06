@@ -1,5 +1,7 @@
 (ns cronj.simulation
-  (:require [clj-time.core :as t]
+  (:require [hara.ova :as v]
+            [clj-time.core :as t]
+            [cronj.data.tab :as tab]
             [cronj.data.timetable :as tt]))
 
 (defn simulate [cnj start end interval & [pause]]
@@ -22,8 +24,9 @@
 
 (defn simulate-st [cnj start end interval & [pause]]
   (if-not (t/before? end start)
-    (do
-      (doseq [t (:timetable cnj)]
-        (exec-st t start))
+    (let [dt-arr (tab/to-dt-arr start)]
+      (doseq [entry (v/select (:timetable cnj) [:enabled true])]
+        (if (tab/match-arr? dt-arr (:tab-arr entry))
+          (exec-st entry start)))
       (if pause (Thread/sleep pause))
       (recur cnj (t/plus start interval) end interval pause))))
