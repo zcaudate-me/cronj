@@ -20,7 +20,8 @@
 (time (sm/simulate-st cnj
                 (lt/to-local-date-time (t/date-time 2000 1 1 1 1))
                 (lt/to-local-date-time (t/date-time 2000 1 1 1 2))
-                (t/secs 1)))
+                (t/secs 1)
+                ))
 
 (time (sm/simulate cnj
                 (lt/to-local-date-time (t/date-time 2000 1 1 1 1))
