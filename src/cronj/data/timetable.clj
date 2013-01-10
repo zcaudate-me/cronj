@@ -46,6 +46,12 @@
 (defn task-disabled? [tt task-id]
   (not (task-enabled? tt task-id)))
 
+(defn trigger-task [tt task-id dt]
+  (let [dt-arr (tab/to-dt-arr dt)]
+    (if-let [entry (first (v/select tt [[:task :id] task-id :enabled true]))]
+      (if (tab/match-arr? dt-arr (:tab-arr entry))
+        (tk/exec! (:task entry) (tab/truncate-ms dt) (:opts entry))))))
+
 (defn trigger-time [tt dt]
   (let [dt-arr (tab/to-dt-arr dt)]
     (doseq [entry (v/select tt [:enabled true])]
