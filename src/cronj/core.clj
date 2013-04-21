@@ -1,6 +1,6 @@
 (ns cronj.core
+  (:use [hara.common :only [add-change-watch]])
   (:require [hara.ova :as v]
-            [hara.fn :as f]
             [cronj.data.task :as tk]
             [cronj.data.timer :as tm]
             [cronj.data.timetable :as tt]))
@@ -19,18 +19,17 @@
     ;;(println args entries)
     (if interval
       (swap! timer assoc :interval interval))
-    (doseq [tte (map tt/tt-entry entries)]
+    (doseq [tte (map tt/task-entry entries)]
       (tt/schedule-task timetable tte))
     (install-watch timer timetable)
     {:timer timer :timetable timetable}))
 
 (defn- install-watch [timer tt]
-  (add-watch timer :time-watch
-   (f/watch-for-change
-    [:last-check]
-    (fn [_ rf _ _]
-      (let [r @rf]
-        (tt/trigger-time tt (:last-check-time r)))))))
+  (add-change-watch
+   timer :time-watch :last-check
+   (fn [_ rf _ _]
+     (let [r @rf]
+       (tt/signal-tick tt (:last-check-time r))))))
 
 
 ;;--------- timer functions --------------

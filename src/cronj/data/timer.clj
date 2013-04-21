@@ -13,15 +13,15 @@
          :interval (or interval DEFAULT-INTERVAL)}))
 
 (defn- timer-fn [timer recur?]
-  (let [last-arr    (@timer :last-check)
+  (let [last-array    (@timer :last-check)
         current-time (lt/local-now)
-        current-arr  (tab/to-dt-arr current-time)]
+        current-array  (tab/to-dt-array current-time)]
     (cond
-      (or (not= last-arr current-arr)
-          (nil? last-arr))
+      (or (not= last-array current-array)
+          (nil? last-array))
       (swap! timer assoc
              :last-check-time current-time
-             :last-check current-arr)
+             :last-check current-array)
 
       :else
       (let [interval (@timer :interval)
@@ -61,6 +61,16 @@
              :thread (future (timer-fn timer true)))
       :else
       (println "The timer is already running."))))
+
+(defn trigger!
+  [timer]
+  (cond
+   (stopped? timer)
+   (swap! timer assoc
+          :start-time (lt/local-now)
+          :thread (future (timer-fn timer false)) )
+   :else
+   (println "The timer is already running.")))
 
 (defn stop! [timer]
   (if-not (stopped? timer)

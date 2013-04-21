@@ -15,8 +15,8 @@
   (map (#'tb/*- 0 10) test-num) => (map (fn [x] (and (>= x 0) (<= x 10))) test-num))
 
 (tabular
- (fact "Testing the 'to-time-array' function"
-   (tb/to-dt-arr ?time) => ?expected)
+ (fact "Testing the 'to-time-arrayay' function"
+   (tb/to-dt-array ?time) => ?expected)
 
  ?time               ?expected
  (t/epoch)           [0 0 0 4 1 1 1970]
@@ -24,7 +24,11 @@
 
 (fact "parse-str takes a string and creates matches"
   (tb/parse-tab "* * * * * * *") => '[(:*) (:*) (:*) (:*) (:*) (:*) (:*)]
-  (tb/parse-tab "1,2 1,5 * * 1 * *") => '[(1 2) (1 5) (:*) (:*) (1) (:*) (:*)])
+  (tb/parse-tab "* * * * * *") => '[(0) (:*) (:*) (:*) (:*) (:*) (:*)]
+  (tb/parse-tab "* * * * *") => (throws Exception)
+  (tb/parse-tab "* * * * * * * *") => (throws Exception)
+  (tb/parse-tab "1,2 1,5 * * 1 * *") => '[(1 2) (1 5) (:*) (:*) (1) (:*) (:*)]
+  (tb/parse-tab "1,2 * * 1 * *") => '[(0) (1 2) (:*) (:*) (1) (:*) (:*)])
 
 (tabular
  (fact "Testing the 'match-entry?' function"
@@ -50,16 +54,14 @@
  35              (-* 2)             falsey)
 
 (tabular
- (fact "Testing the 'match-arr?' function"
-   (tb/match-arr? ?t-arr ?c-arr) => ?expected)
+ (fact "Testing the 'match-array?' function"
+   (tb/match-array? ?t-array ?c-array) => ?expected)
 
- ?t-arr                    ?c-arr            ?expected
+ ?t-array                    ?c-array            ?expected
  [30 14 0 4 26 7 2012]     every-5-seconds-0   true
  [31 14 0 4 26 7 2012]     every-5-seconds-0   false
  [30 14 0 4 26 7 2012]     every-5-seconds-1   true
  [31 14 0 4 26 7 2012]     every-5-seconds-1   false)
 
-(tb/match-arr? [30 14 0 4 26 7 2012]  every-5-seconds-0)
-
-(fact "assoc-tab and tab-str"
+#_(fact "assoc-tab and tab-str"
   (tb/tab-str (tb/assoc-tab {} "* * * * * * *")) => "* * * * * * *")

@@ -1,6 +1,6 @@
 (ns cronj.test-core
   (:use midje.sweet
-        hara.testing)
+        hara.checkers)
   (:require [cronj.core :as cj]
             [cronj.data.timetable :as tt]
             [cronj.data.task :as tk]
@@ -75,18 +75,18 @@
         (Thread/sleep 1000))
 
     (cj/task-threads cnj :t1) => ()
-    (cj/task-threads cnj :t2) => (has-length #{1 2})
+    (cj/task-threads cnj :t2) => nil
 
     (do "sleep 3 secs"
         (Thread/sleep 3000))
 
     (cj/task-threads cnj :t1) => ()
-    (cj/task-threads cnj :t2) => (has-length #{4 5})
+    (cj/task-threads cnj :t2) => nil
 
     (do "kill threads"
         (cj/kill-threads cnj :t2))
 
-    (cj/task-threads cnj :t2) => (has-length #{0 1})
+    (cj/task-threads cnj :t2) => nil
 
     (do "clean up"
         (cj/shutdown!! cnj))
@@ -97,35 +97,3 @@
         (cj/empty-tasks cnj))
 
     (cj/all-task-ids cnj) => []))
-
-
-(comment
-
-(tk/running (cj/get-task cnj :t2))
-
-(cj/start! cnj)
-(cj/stop! cnj)
-
-(def c (cj/cronj))
-
-(tt/schedule-task (:timetable c) (tk/task :1 (fn [dt opts] (println dt opts))) "/2 * * * * * *")
-
-(tm/start! (:timer c))
-(tm/stop! (:timer c))
-  (cj/unschedule-all-tasks!)
-  (cj/load-tasks!
-   [{:id 1 :desc 1 :handler #(println "Task 1: " %) :tab "0-60/2 * * * * * *"}])
-
-  (cj/schedule-task! {:id 2 :desc 2 :handler #(println "Task 2: " %) :tab "1-60/2 * * * * * *"} )
-  (println g/*timesheet*)
-  (println g/*timeloop*)
-  (.getWatches g/*timeloop*)
-
-  (cj/start!)
-  (cj/running?)
-  (cj/stopped?)
-  (cj/stop!)
-  (println g/*timeloop*)
-
-  (swap! g/*timeloop* assoc :last-check [2 3] :last-check-time (clj-time.core/now))
-)

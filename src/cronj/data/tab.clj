@@ -1,9 +1,9 @@
 (ns cronj.data.tab
-  (:use [clojure.string :only [split]])
+  (:use [clojure.string :only [split]]
+        [hara.common :only [error suppress F]])
   (:require [clj-time.core :as t]
             [clj-time.local :as lt]))
 
-;;(def !required-tab-keys [:id :tab-str :tab-arr])
 (def SCHEDULE-ELEMENTS [:sec :minute :hour :day-of-week :day :month :year])
 
  ;; There are 2 different representations of cronj tab data:
@@ -44,7 +44,8 @@
                (sort (map to-int (split es #"-"))))
         (re-find #"^\d+-\d+/\d$" es)
         (apply *-
-               (map to-int (split es #"[-/]")))))
+               (map to-int (split es #"[-/]")))
+        :else (error es " is not in the right format.")))
 
 (defn- parse-tab-group [s]
   (let [e-toks (re-seq #"[^,]+" s)]
@@ -52,20 +53,19 @@
 
 (defn parse-tab [s]
   (let [c-toks (re-seq #"[^\s]+" s)
-        len-c (count c-toks)]
-    (if (= (count SCHEDULE-ELEMENTS) len-c)
-      (map parse-tab-group c-toks)
-      (throw IllegalArgumentException "The schedule does not have the correct number of elements."))))
+        len-c (count c-toks)
+        sch-c  (count SCHEDULE-ELEMENTS)]
+    (cond (= sch-c len-c) (map parse-tab-group c-toks)
+          (= (dec sch-c) len-c) (map parse-tab-group (cons "0" c-toks))
+          :else
+          (error "The schedule " s
+                 " does not have the correct number of elements."))))
 
 (defn valid-tab? [s]
-  (try
-    (parse-tab s)
-    true
-    (catch Exception e false)))
-
+  (suppress (if (parse-tab s) true)))
 
 ;; dt-arr methods
-(defn to-dt-arr [dt]
+(defn to-dt-array [dt]
   (map #(% dt)
        [t/sec t/minute t/hour t/day-of-week t/day t/month t/year]))
 
@@ -82,14 +82,8 @@
         (sequential? tab-e) (some #(match-elem? dt-e %) tab-e)
         :else false))
 
-(defn match-arr? [dt-arr tab-arr]
+(defn match-array? [dt-array tab-array]
   (every? true?
-          (map match-elem? dt-arr tab-arr)))
+          (map match-elem? dt-array tab-array)))
 
-;; task related methods
-(defn assoc-tab [task s]
-  {:pre [(valid-tab? s)]}
-  (assoc task :tab-str s :tab-arr (parse-tab s)))
-
-(defn tab-str [task]
-  (:tab-str task))
+(def nil-array [F F F F F F F])

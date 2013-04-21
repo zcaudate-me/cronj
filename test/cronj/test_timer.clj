@@ -1,6 +1,6 @@
 (ns cronj.test-timer
   (:use midje.sweet
-        hara.testing)
+        hara.checkers)
     (:require [hara.ova :as v]
               [clj-time.local :as lt]
               [clj-time.core :as t]
@@ -10,10 +10,10 @@
 (fact "test timer-fn"
   (let [tmr (tm/timer)
         dt      (tab/truncate-ms (lt/local-now))
-        dt-arr  (tab/to-dt-arr dt)
+        dt-array  (tab/to-dt-array dt)
         _   (#'tm/timer-fn tmr false)]
     (fact "last-check should update"
-      (:last-check @tmr) => dt-arr
+      (:last-check @tmr) => dt-array
       (tab/truncate-ms (:last-check-time @tmr)) => dt)))
 
 
