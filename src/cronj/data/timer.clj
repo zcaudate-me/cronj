@@ -51,26 +51,19 @@
          (clj-time.coerce/to-long start)))))
 
 (defn start!
-  ([timer] (start! timer DEFAULT-INTERVAL))
-  ([timer interval]
+  ([timer] (start! timer DEFAULT-INTERVAL true))
+  ([timer interval recur?]
     (cond
       (stopped? timer)
       (swap! timer assoc
              :start-time (lt/local-now)
              :interval interval
-             :thread (future (timer-fn timer true)))
+             :thread (future (timer-fn timer recur?)))
       :else
       (println "The timer is already running."))))
 
 (defn trigger!
-  [timer]
-  (cond
-   (stopped? timer)
-   (swap! timer assoc
-          :start-time (lt/local-now)
-          :thread (future (timer-fn timer false)) )
-   :else
-   (println "The timer is already running.")))
+  [timer] (start! timer DEFAULT-INTERVAL false))
 
 (defn stop! [timer]
   (if-not (stopped? timer)

@@ -6,6 +6,10 @@
             [cronj.data.task :as tk]
             [cronj.data.timer :as tm] :reload))
 
+(defn has-length [counts]
+  (fn [obj]
+    (some #(= % (count obj)) counts)))
+
 (def cnj (cj/cronj
           :interval 2
           :entries [{:id       :t1
@@ -75,18 +79,18 @@
         (Thread/sleep 1000))
 
     (cj/task-threads cnj :t1) => ()
-    (cj/task-threads cnj :t2) => nil
+    (cj/task-threads cnj :t2) => (has-length #{1 2})
 
     (do "sleep 3 secs"
         (Thread/sleep 3000))
 
     (cj/task-threads cnj :t1) => ()
-    (cj/task-threads cnj :t2) => nil
+    (cj/task-threads cnj :t2) => (has-length #{4 5})
 
     (do "kill threads"
         (cj/kill-threads cnj :t2))
 
-    (cj/task-threads cnj :t2) => nil
+    (cj/task-threads cnj :t2) => (has-length #{0 1})
 
     (do "clean up"
         (cj/shutdown!! cnj))

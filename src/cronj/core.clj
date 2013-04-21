@@ -16,9 +16,7 @@
         margs     (apply hash-map args)
         interval  (:interval margs)
         entries   (:entries  margs)]
-    ;;(println args entries)
-    (if interval
-      (swap! timer assoc :interval interval))
+    (if interval (swap! timer assoc :interval interval))
     (doseq [tte (map tt/task-entry entries)]
       (tt/schedule-task timetable tte))
     (install-watch timer timetable)
@@ -51,6 +49,9 @@
 
 (defn unschedule-task [cnj task-id]
   (tt/unschedule-task (:timetable cnj) task-id))
+
+(defn reschedule-task [cnj task-id schedule]
+  (tt/reschedule-task (:timetable cnj) task-id schedule))
 
 (defn empty-tasks [cnj]
   (doseq [id (tt/task-ids (:timetable cnj))]
