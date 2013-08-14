@@ -1,6 +1,6 @@
 (ns cronj.core
-  (:use [hara.common :only [add-change-watch]])
-  (:require [hara.ova :as v]
+  (:require [ova.core :as v]
+            [hara.state :refer [add-change-watch]]
             [cronj.data.task :as tk]
             [cronj.data.timer :as tm]
             [cronj.data.timetable :as tt]))

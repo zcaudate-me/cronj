@@ -1,6 +1,8 @@
 (ns cronj.data.timetable
-  (:use [hara.common :only [latch suppress]])
-  (:require [hara.ova :as v]
+  (:require [hara.state :refer [latch]]
+            [hara.common.error :refer [suppress]]
+            [hara.common.fn :refer [F]]
+            [ova.core :as v]
             [cronj.data.tab :as tab]
             [cronj.data.task :as tk]))
 
@@ -30,9 +32,10 @@
 
 (defn reschedule-task [tt task-id schedule]
   (dosync
-   (v/!>merge tt [[:task :id task-id]]
-              {:schedule  schedule
-               :tab-array (set-tab-array-fn schedule)})))
+   (v/!> tt [[:task :id task-id]]
+         merge
+         {:schedule  schedule
+          :tab-array (set-tab-array-fn schedule)})))
 
 (defn schedule-task
   ([tt tte]
@@ -44,11 +47,13 @@
 
 (defn enable-task [tt task-id]
   (dosync
-   (v/!>merge tt [[:task :id] task-id] {:enabled true})))
+   (v/!> tt [[:task :id] task-id]
+         merge {:enabled true})))
 
 (defn disable-task [tt task-id]
   (dosync
-   (v/!>merge tt [[:task :id] task-id] {:enabled false})))
+   (v/!> tt [[:task :id] task-id]
+           merge{:enabled false})))
 
 (defn task-enabled? [tt task-id]
   (:enabled (first (v/select tt [[:task :id] task-id]))))

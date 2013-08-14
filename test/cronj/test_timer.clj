@@ -1,7 +1,7 @@
 (ns cronj.test-timer
   (:use midje.sweet
         hara.checkers)
-    (:require [hara.ova :as v]
+    (:require [ova.core :as v]
               [clj-time.local :as lt]
               [clj-time.core :as t]
               [cronj.data.tab :as tab]

@@ -1,5 +1,5 @@
 (ns cronj.simulation
-  (:require [hara.ova :as v]
+  (:require [ova.core :as v]
             [clj-time.core :as t]
             [cronj.data.tab :as tab]
             [cronj.data.timetable :as tt]))

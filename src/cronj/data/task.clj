@@ -1,6 +1,7 @@
 (ns cronj.data.task
-  (use [hara.common :only [error hash-map? suppress]])
-  (require [hara.ova :as v]))
+  (:require [ova.core :as v]
+            [hara.common.error :refer [error suppress]]
+            [hara.common.types :refer [hash-map?]]))
 
 (def REQUIRED-TASK-KEYS [:id :handler])
 (def ALL-TASK-KEYS [:id :desc :handler :running :last-exec :last-successful :pre-hook :post-hook])

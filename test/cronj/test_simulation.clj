@@ -3,7 +3,7 @@
         hara.checkers)
   (:require [clj-time.core :as t]
             [clj-time.local :as lt]
-            [hara.ova :as v]
+            [ova.core :as v]
             [cronj.core :as cj]
             [cronj.data.timetable :as tt]
             [cronj.simulation :as sm] :reload))

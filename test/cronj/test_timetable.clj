@@ -1,7 +1,7 @@
 (ns cronj.test-timetable
   (:use midje.sweet
         hara.checkers)
-    (:require [hara.ova :as v]
+    (:require [ova.core :as v]
               [clj-time.local :as lt]
               [clj-time.core :as t]
               [cronj.data.task :as tk]
@@ -11,8 +11,6 @@
     (let [ttb (tt/timetable)
           tk1 (tk/task :1 (fn [& _]))
           tk2 (tk/task :2 (fn [& _]))]
-      (fact "initialization"
-        ttb => (is-ova))
 
       (count ttb) => 0
 

@@ -1,7 +1,8 @@
 (ns cronj.data.tab
-  (:use [clojure.string :only [split]]
-        [hara.common :only [error suppress F]])
-  (:require [clj-time.core :as t]
+  (:require [clojure.string :refer [split]]
+            [hara.common.error :refer [error suppress]]
+            [hara.common.fn :refer [F]]
+            [clj-time.core :as t]
             [clj-time.local :as lt]))
 
 (def SCHEDULE-ELEMENTS [:sec :minute :hour :day-of-week :day :month :year])

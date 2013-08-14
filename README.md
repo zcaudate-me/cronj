@@ -4,7 +4,7 @@
 
 In project.clj, add to dependencies:
 
-     [cronj "0.6.1"]
+     [im.chit/cronj "0.8.1"]
 
 ## Quick Start
 
