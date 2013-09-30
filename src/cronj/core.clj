@@ -1,33 +1,34 @@
 (ns cronj.core
   (:require [ova.core :as v]
             [hara.state :refer [add-change-watch]]
+            [hara.import :as im]
             [cronj.data.task :as tk]
             [cronj.data.timer :as tm]
-            [cronj.data.timetable :as tt]))
+            [cronj.data.scheduler :as ts]))
+
+(im/import cronj.simulation [simulate simulate-st local-time])
+(im/import clj-time.local [local-now])
 
 (declare install-watch cronj)
 
-(defmacro defcronj [name & args]
-  `(def ~name (cronj ~@args)))
-
 (defn cronj [& args]
-  (let [timetable (tt/timetable)
+  (let [scheduler (ts/scheduler)
         timer     (tm/timer)
         margs     (apply hash-map args)
         interval  (:interval margs)
         entries   (:entries  margs)]
     (if interval (swap! timer assoc :interval interval))
-    (doseq [tte (map tt/task-entry entries)]
-      (tt/schedule-task timetable tte))
-    (install-watch timer timetable)
-    {:timer timer :timetable timetable}))
+    (doseq [tsce (map ts/task-entry entries)]
+      (ts/schedule-task scheduler tsce))
+    (install-watch timer scheduler)
+    {:timer timer :scheduler scheduler}))
 
-(defn- install-watch [timer tt]
+(defn- install-watch [timer tsc]
   (add-change-watch
    timer :time-watch :last-check
    (fn [_ rf _ _]
      (let [r @rf]
-       (tt/signal-tick tt (:last-check-time r))))))
+       (ts/signal-tick tsc (:last-check-time r))))))
 
 
 ;;--------- timer functions --------------
@@ -42,66 +43,71 @@
 
 (defn uptime [cnj] (tm/uptime (:timer cnj)))
 
-;;--------- timetable functions -----------
+;;--------- scheduler functions -----------
 
 (defn schedule-task [cnj task schedule & [enabled? opts]]
-  (tt/schedule-task (:timetable cnj) task schedule enabled? opts))
+  (ts/schedule-task (:scheduler cnj) task schedule enabled? opts))
 
 (defn unschedule-task [cnj task-id]
-  (tt/unschedule-task (:timetable cnj) task-id))
+  (ts/unschedule-task (:scheduler cnj) task-id))
 
 (defn reschedule-task [cnj task-id schedule]
-  (tt/reschedule-task (:timetable cnj) task-id schedule))
+  (ts/reschedule-task (:scheduler cnj) task-id schedule))
 
 (defn empty-tasks [cnj]
-  (doseq [id (tt/task-ids (:timetable cnj))]
-    (tt/unschedule-task (:timetable cnj) id)))
-
-(defn all-task-ids [cnj]
-  (tt/task-ids (:timetable cnj)))
-
-(defn all-threads [cnj]
-  (tt/task-threads (:timetable cnj)))
+  (doseq [id (ts/task-ids (:scheduler cnj))]
+    (ts/unschedule-task (:scheduler cnj) id)))
 
 (defn enable-task [cnj task-id]
-  (tt/enable-task (:timetable cnj) task-id))
+  (ts/enable-task (:scheduler cnj) task-id))
 
 (defn disable-task [cnj task-id]
-  (tt/disable-task (:timetable cnj) task-id))
+  (ts/disable-task (:scheduler cnj) task-id))
 
 (defn task-enabled? [cnj task-id]
-  (tt/task-enabled? (:timetable cnj) task-id))
+  (ts/task-enabled? (:scheduler cnj) task-id))
 
 (defn task-disabled? [cnj task-id]
-  (tt/task-disabled? (:timetable cnj) task-id))
+  (ts/task-disabled? (:scheduler cnj) task-id))
 
 ;;---------- task related functions -------
 
+(defn get-ids [cnj]
+  (ts/task-ids (:scheduler cnj)))
+
 (defn get-task [cnj task-id]
-  (:task (tt/get-task (:timetable cnj) task-id)))
+  (ts/get-task (:scheduler cnj) task-id))
 
-(defn task-threads
-  ([cnj task-id]
-     (tk/running (get-task cnj task-id)))
+(defn get-threads
   ([cnj]
-     ()))
-
-(defn kill-task-thread [cnj task-id tid]
-  (tk/kill! (get-task cnj task-id) tid))
-
-(defn kill-threads
+     (ts/task-threads (:scheduler cnj)))
   ([cnj task-id]
-     (tk/kill-all! (get-task cnj task-id)))
+     (tk/running (-> (get-task cnj task-id) :task))))
+
+(defn exec!
+  ([cnj task-id]
+     (exec! cnj task-id (local-now)))
+  ([cnj task-id dt]
+     (let [opts (-> (get-task cnj task-id) :opts)]
+       (exec! cnj task-id dt opts)))
+  ([cnj task-id dt opts]
+     (tk/exec! (-> (get-task cnj task-id) :task) dt opts)))
+
+(defn kill!
   ([cnj]
-     (doseq [id (all-task-ids cnj)]
-       (kill-threads cnj id))))
+    (doseq [id (get-ids cnj)]
+      (tk/kill-all! (-> (get-task cnj id) :task))))
+  ([cnj task-id]
+     (tk/kill-all! (-> (get-task cnj task-id) :task)))
+  ([cnj task-id tid]
+     (tk/kill! (-> (get-task cnj task-id) :task) tid)))
 
 ;;--------- system level ----------
 
-(defn shutdown!! [cnj]
+(defn shutdown! [cnj]
   (stop! cnj)
-  (kill-threads cnj))
+  (kill! cnj))
 
-(defn restart!! [cnj]
-  (shutdown!! cnj)
+(defn restart! [cnj]
+  (shutdown! cnj)
   (start! cnj))

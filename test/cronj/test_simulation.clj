@@ -5,7 +5,7 @@
             [clj-time.local :as lt]
             [ova.core :as v]
             [cronj.core :as cj]
-            [cronj.data.timetable :as tt]
+            [cronj.data.scheduler :as ts]
             [cronj.simulation :as sm] :reload))
 
 ;; Test for
@@ -25,23 +25,24 @@
                        :opts     {:atom *holder*}
                        :enabled  true}]))
 
+
 (fact
   (do "Reset Store"
       (reset! *holder* []))
 
   (cj/disable-task *cnj* :conj)
-  (tt/signal-tick (:timetable *cnj*) :conj *t1*)
+  (ts/signal-tick (:scheduler *cnj*) :conj *t1*)
   (count @*holder*) => 0
 
   (cj/enable-task *cnj* :conj)
-  (tt/signal-tick (:timetable *cnj*) :conj *t1*)
+  (ts/signal-tick (:scheduler *cnj*) :conj *t1*)
   (count @*holder*) => 1
   (first @*holder*) => *t1*)
 
 (fact
   (do "Simulate using single threaded execution"
       (reset! *holder* [])
-      (time (sm/simulate-st *cnj* *t1* *t2* (t/secs 1))))
+      (time (sm/simulate-st *cnj* *t1* *t2* (t/seconds 1))))
   (count @*holder*) => 61
   (first @*holder*) => *t1*
   (last @*holder*)  => *t2*)
@@ -50,7 +51,7 @@
   (do "Simulate using single threaded execution with task disabled"
       (reset! *holder* [])
       (cj/disable-task *cnj* :conj)
-      (time (sm/simulate-st *cnj* *t1* *t2* (t/secs 1))))
+      (time (sm/simulate-st *cnj* *t1* *t2* (t/seconds 1))))
   (count @*holder*) => 0
   (first @*holder*) => nil
   (last @*holder*)  => nil
@@ -61,8 +62,8 @@
 (fact
   (do "Simulate using multi-threaded execution with a pause of 1"
       (reset! *holder* [])
-      (cj/shutdown!! *cnj*)
-      (time (sm/simulate *cnj* *t1* *t2* (t/secs 2))))
+      (cj/shutdown! *cnj*)
+      (time (sm/simulate *cnj* *t1* *t2* (t/seconds 2))))
   (count @*holder*) => 31
   (first @*holder*) => *t1*
   (last @*holder*)  => *t2*)
@@ -70,8 +71,8 @@
 (fact
   (do "Simulate using multi-threaded execution with a pause of 1"
       (reset! *holder* [])
-      (cj/shutdown!! *cnj*)
-      (time (sm/simulate *cnj* *t1* *t2* (t/secs 2) 1)))
+      (cj/shutdown! *cnj*)
+      (time (sm/simulate *cnj* *t1* *t2* (t/seconds 2) 1)))
   (count @*holder*) => 31
   (first @*holder*) => *t1*
   (last @*holder*)  => *t2*)
@@ -94,18 +95,18 @@
   (time (sm/simulate-st cnj
                         (lt/to-local-date-time (t/date-time 2000 1 1 1 1))
                         (lt/to-local-date-time (t/date-time 2000 1 1 1 2))
-                        (t/secs 1)))
+                        (t/seconds 1)))
 
   (time (sm/simulate cnj
                      (lt/to-local-date-time (t/date-time 2000 1 1 1 1))
                      (lt/to-local-date-time (t/date-time 2000 1 1 1 2))
-                     (t/secs 1)))
+                     (t/seconds 1)))
 
 
 )
 
-;;(exec-st (first (:timetable cnj)) (t/date-time 2000 1 1 1))
+;;(exec-st (first (:scheduler cnj)) (t/date-time 2000 1 1 1))
 
-;;(tt/signal-tick (:timetable cnj) (lt/to-local-date-time (t/date-time 2000 1 1 1 1)))
+;;(ts/signal-tick (:scheduler cnj) (lt/to-local-date-time (t/date-time 2000 1 1 1 1)))
 
-;;(:handler (:task (first (:timetable cnj))))
+;;(:handler (:task (first (:scheduler cnj))))

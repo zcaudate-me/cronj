@@ -27,7 +27,7 @@
   @(:last-successful task))
 
 (defn running [task]
-  (->> (v/<< (:running task))
+  (->> (v/selectv (:running task))
        (map #(select-keys % [:tid :opts]))))
 
 
@@ -79,7 +79,7 @@
         (exec-main task tid opts)))
 
 (defn kill! [task tid]
-  (let [thrds (v/<< (:running task) [:tid tid])]
+  (let [thrds (v/selectv (:running task) [:tid tid])]
     (if-let [thrd (first thrds)]
       (do (future-cancel (:thread thrd))
           (deregister-thread task tid false))
@@ -87,7 +87,7 @@
 
 (defn kill-all! [task]
   (dosync
-   (doseq [tid (map :tid (v/<< (:running task)))]
+   (doseq [tid (map :tid (v/selectv (:running task)))]
      (kill! task tid))))
 
 (defn reinit! [task]

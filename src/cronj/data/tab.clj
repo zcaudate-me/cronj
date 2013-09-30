@@ -5,7 +5,7 @@
             [clj-time.core :as t]
             [clj-time.local :as lt]))
 
-(def SCHEDULE-ELEMENTS [:sec :minute :hour :day-of-week :day :month :year])
+(def SCHEDULE-ELEMENTS [:second :minute :hour :day-of-week :day :month :year])
 
  ;; There are 2 different representations of cronj tab data:
  ;;   string: (for humans)        "   *       2,4      2-9         /8      ...  "
@@ -68,13 +68,13 @@
 ;; dt-arr methods
 (defn to-dt-array [dt]
   (map #(% dt)
-       [t/sec t/minute t/hour t/day-of-week t/day t/month t/year]))
+       [t/second t/minute t/hour t/day-of-week t/day t/month t/year]))
 
 (defn truncate-ms [dt]
   (lt/to-local-date-time
    (apply t/date-time
           (map #(% dt)
-               [t/year t/month t/day t/hour t/minute t/sec]))))
+               [t/year t/month t/day t/hour t/minute t/second]))))
 
 (defn- match-elem? [dt-e tab-e]
   (cond (= tab-e :*) true

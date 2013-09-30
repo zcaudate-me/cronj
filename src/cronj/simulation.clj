@@ -1,20 +1,31 @@
 (ns cronj.simulation
   (:require [ova.core :as v]
             [clj-time.core :as t]
+            [clj-time.local :as lt]
             [cronj.data.tab :as tab]
-            [cronj.data.timetable :as tt]))
+            [cronj.data.scheduler :as ts]))
+
+(defn local-time [& args]
+  (lt/to-local-date-time
+   (apply t/date-time args)))
 
 ;; Speed Up Execution.
 
 (defn- simulate-loop [cnj start end interval pause]
   (if-not (t/before? end start)
     (do
-      (tt/signal-tick (:timetable cnj) start)
+      (ts/signal-tick (:scheduler cnj) start)
       (if pause (Thread/sleep pause))
       (recur cnj (t/plus start interval) end interval pause))))
 
 (defn simulate [cnj start end & [interval pause]]
-  (let [interval (or interval (t/secs 1))
+  (let [interval (cond (nil? interval)
+                       (t/seconds 1)
+
+                       (integer? interval)
+                       (t/seconds interval)
+
+                       :else interval)
         pause    (or pause 0)]
     (simulate-loop cnj start end interval pause)))
 
@@ -34,13 +45,19 @@
 (defn- simulate-st-loop [cnj start end interval pause]
   (if-not (t/before? end start)
     (let [dt-array (tab/to-dt-array start)]
-      (doseq [entry (v/select (:timetable cnj) [:enabled true])]
+      (doseq [entry (v/select (:scheduler cnj) [:enabled true])]
         (if (tab/match-array? dt-array (:tab-array entry))
           (exec-st entry start)))
       (if pause (Thread/sleep pause))
       (recur cnj (t/plus start interval) end interval pause))))
 
 (defn simulate-st [cnj start end & [interval pause]]
-  (let [interval (or interval (t/secs 1))
+  (let [interval (cond (nil? interval)
+                       (t/seconds 1)
+
+                       (integer? interval)
+                       (t/seconds interval)
+
+                       :else interval)
         pause    (or pause 0)]
     (simulate-st-loop cnj start end interval pause)))

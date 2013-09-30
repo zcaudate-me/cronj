@@ -62,7 +62,6 @@
       (fact "last-successful should be :mt1-second"
         (t/last-successful mt1) => :mt1-second))))
 
-
 (facts "longer task execution behaviour"
   (let [job-100ms (t/task :1 (fn [& _] (Thread/sleep 10)))
         [reg job]      (t/exec! job-100ms :test)]

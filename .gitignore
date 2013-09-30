@@ -10,3 +10,4 @@ pom.xml
 .lein-plugins
 .DS_Store
 .#*
+index.html
