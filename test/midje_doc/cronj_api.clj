@@ -209,11 +209,11 @@ Where `A`, `B` and `N` are numbers; `E1` and `E2` are expressions. All seven ele
       :opts {:output "Hello There"}
       :output "#<Atom@3f6225b8: nil>"})
 
-
 [[:subsection {:title "get-threads"}]]
 
 "Returns a list of running threads. See [Task Management](#task-management) for examples."
 
+[[{:numbered false}]]
 (comment
   (get-threads <cnj>)  ;; Gets all running threads in <cnj>
 
@@ -224,6 +224,7 @@ Where `A`, `B` and `N` are numbers; `E1` and `E2` are expressions. All seven ele
 
 "Launches a thread for the task, irrespective of whether the task has not been scheduled or that it has been disabled."
 
+[[{:numbered false}]]
 (comment
   (exec! <cnj> <task-id>)  ;; launches a new thread for <task-id> using
                            ;; the current time and default opts
@@ -239,6 +240,7 @@ Where `A`, `B` and `N` are numbers; `E1` and `E2` are expressions. All seven ele
 
 "Kills running threads. See [Task Management](#task-management) for examples."
 
+[[{:numbered false}]]
 (comment
   (kill! <cnj>)    ;; Kills all running threads
 
