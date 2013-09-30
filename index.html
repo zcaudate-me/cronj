@@ -1,0 +1,648 @@
+<html><head><meta content="chrome=1" http-equiv="X-UA-Compatible" /><meta charset="utf-8" /><meta content="width=device-width, initial-scale=1, user-scalable=no" name="viewport" /><title>cronj</title><style>body {
+  padding:50px;
+  font:14px/1.5 Helvetica, Arial, sans-serif;
+  color:#777;
+  font-weight:300;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  color:#222;
+  margin:0 0 20px;
+}
+
+p, ul, ol, table, pre, dl {
+  margin:0 0 20px;
+}
+
+h1, h2, h3 {
+  line-height:1.1;
+}
+
+h1 {
+  font-size:28px;
+}
+
+h2 {
+  color:#393939;
+}
+
+h4, h5, h6 {
+  color:#494949;
+  margin:0;
+}
+
+header h4{
+  margin: 10 0 0 0px;
+}
+
+a {
+  color:#39c;
+  font-weight:400;
+  text-decoration:none;
+}
+
+a small {
+  font-size:11px;
+  color:#777;
+  margin-top:-0.6em;
+  display:block;
+}
+
+.wrapper {
+  width:860px;
+  margin:0 auto;
+}
+
+.figure div.img {
+  text-align: center;
+  border-radius: 5px;
+  border: 1px solid #ddd;
+  padding: 10px;
+}
+
+blockquote {
+  border-left:1px solid #e5e5e5;
+  margin:0;
+  padding:0 0 0 20px;
+  font-style:italic;
+}
+
+code, pre {
+  font-family:Monaco, Bitstream Vera Sans Mono, Lucida Console, Terminal;
+  color:#333;
+  font-size:12px;
+}
+
+pre {
+  padding:8px 15px;
+  background: #f8f8f8;  
+  border-radius:5px;
+  border:1px solid #e5e5e5;
+  overflow-x: auto;
+}
+
+table {
+  width:100%;
+  border-collapse:collapse;
+}
+
+th, td {
+  text-align:left;
+  padding:5px 10px;
+  border-bottom:1px solid #e5e5e5;
+}
+
+dt {
+  color:#444;
+  font-weight:700;
+}
+
+th {
+  color:#444;
+}
+
+img {
+  max-width:100%;
+}
+
+header {
+  width:270px;
+  float:left;
+  /*position:fixed;*/
+}
+
+header ul {
+  list-style:none;
+  height:40px;
+  
+  padding:0;
+  
+  background: #eee;
+  background: -moz-linear-gradient(top, #f8f8f8 0%, #dddddd 100%);
+  background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,#f8f8f8), color-stop(100%,#dddddd));
+  background: -webkit-linear-gradient(top, #f8f8f8 0%,#dddddd 100%);
+  background: -o-linear-gradient(top, #f8f8f8 0%,#dddddd 100%);
+  background: -ms-linear-gradient(top, #f8f8f8 0%,#dddddd 100%);
+  background: linear-gradient(top, #f8f8f8 0%,#dddddd 100%);
+  
+  border-radius:5px;
+  border:1px solid #d2d2d2;
+  box-shadow:inset #fff 0 1px 0, inset rgba(0,0,0,0.03) 0 -1px 0;
+  width:270px;
+}
+
+header li {
+  width:89px;
+  float:left;
+  border-right:1px solid #d2d2d2;
+  height:40px;
+}
+
+header ul a {
+  line-height:1;
+  font-size:11px;
+  color:#999;
+  display:block;
+  text-align:center;
+  padding-top:6px;
+  height:40px;
+}
+
+strong {
+  font-weight:700;
+}
+
+header ul li + li {
+  width:88px;
+  border-left:1px solid #fff;
+}
+
+header ul li + li + li {
+  border-right:none;
+  width:89px;
+}
+
+header ul a strong {
+  font-size:14px;
+  display:block;
+  color:#222;
+}
+
+section {
+  width: 60%;
+  float:right;
+  padding-bottom:50px;
+  padding-right: 10%;
+}
+
+small {
+  font-size:11px;
+}
+
+hr {
+  border:0;
+  background:#e5e5e5;
+  height:1px;
+  margin:0 0 20px;
+}
+
+footer {
+  width:270px;
+  float:left;
+  position:fixed;
+  bottom:50px;
+}
+
+header div.heading {
+  display:none;
+}
+
+
+@media print, screen and (max-width: 960px) {
+  
+  div.wrapper {
+    width:auto;
+    margin:0;
+  }
+  
+  header, section, footer {
+    float:none;
+    position:static;
+    width:auto;
+  }
+  
+  header div.heading {
+    display:block;
+  }
+    
+  section div.heading {
+    display:none;
+  }
+  
+  section {
+    border:1px solid #e5e5e5;
+    border-width:1px 0;
+    padding:20px 0;
+    margin:0 0 20px;
+  }
+  
+  header a small {
+    display:inline;
+  }
+  
+  header ul {
+    position:absolute;
+    right:50px;
+    top:52px;
+  }
+}
+
+@media print, screen and (max-width: 720px) {
+  body {
+    word-wrap:break-word;
+  }
+  
+  header {
+    padding:0;
+  }
+  
+  header ul, header p.view {
+    position:static;
+  }
+  
+  pre, code {
+    word-wrap:normal;
+  }
+}
+
+@media print, screen and (max-width: 480px) {
+  body {
+    padding:15px;
+  }
+  
+  header ul {
+    display:none;
+  }
+}
+
+@media print {
+  body {
+    padding:0.4in;
+    font-size:12pt;
+    color:#444;
+  }
+}
+
+
+.highlight  { background: #ffffff; }
+.highlight .c { color: #999988; font-style: italic } /* Comment */
+.highlight .err { color: #a61717; background-color: #e3d2d2 } /* Error */
+.highlight .k { font-weight: bold } /* Keyword */
+.highlight .o { font-weight: bold } /* Operator */
+.highlight .cm { color: #999988; font-style: italic } /* Comment.Multiline */
+.highlight .cp { color: #999999; font-weight: bold } /* Comment.Preproc */
+.highlight .c1 { color: #999988; font-style: italic } /* Comment.Single */
+.highlight .cs { color: #999999; font-weight: bold; font-style: italic } /* Comment.Special */
+.highlight .gd { color: #000000; background-color: #ffdddd } /* Generic.Deleted */
+.highlight .gd .x { color: #000000; background-color: #ffaaaa } /* Generic.Deleted.Specific */
+.highlight .ge { font-style: italic } /* Generic.Emph */
+.highlight .gr { color: #aa0000 } /* Generic.Error */
+.highlight .gh { color: #999999 } /* Generic.Heading */
+.highlight .gi { color: #000000; background-color: #ddffdd } /* Generic.Inserted */
+.highlight .gi .x { color: #000000; background-color: #aaffaa } /* Generic.Inserted.Specific */
+.highlight .go { color: #888888 } /* Generic.Output */
+.highlight .gp { color: #555555 } /* Generic.Prompt */
+.highlight .gs { font-weight: bold } /* Generic.Strong */
+.highlight .gu { color: #800080; font-weight: bold; } /* Generic.Subheading */
+.highlight .gt { color: #aa0000 } /* Generic.Traceback */
+.highlight .kc { font-weight: bold } /* Keyword.Constant */
+.highlight .kd { font-weight: bold } /* Keyword.Declaration */
+.highlight .kn { font-weight: bold } /* Keyword.Namespace */
+.highlight .kp { font-weight: bold } /* Keyword.Pseudo */
+.highlight .kr { font-weight: bold } /* Keyword.Reserved */
+.highlight .kt { color: #445588; font-weight: bold } /* Keyword.Type */
+.highlight .m { color: #009999 } /* Literal.Number */
+.highlight .s { color: #d14 } /* Literal.String */
+.highlight .na { color: #008080 } /* Name.Attribute */
+.highlight .nb { color: #0086B3 } /* Name.Builtin */
+.highlight .nc { color: #445588; font-weight: bold } /* Name.Class */
+.highlight .no { color: #008080 } /* Name.Constant */
+.highlight .ni { color: #800080 } /* Name.Entity */
+.highlight .ne { color: #990000; font-weight: bold } /* Name.Exception */
+.highlight .nf { color: #990000; font-weight: bold } /* Name.Function */
+.highlight .nn { color: #555555 } /* Name.Namespace */
+.highlight .nt { color: #000080 } /* Name.Tag */
+.highlight .nv { color: #008080 } /* Name.Variable */
+.highlight .ow { font-weight: bold } /* Operator.Word */
+.highlight .w { color: #bbbbbb } /* Text.Whitespace */
+.highlight .mf { color: #009999 } /* Literal.Number.Float */
+.highlight .mh { color: #009999 } /* Literal.Number.Hex */
+.highlight .mi { color: #009999 } /* Literal.Number.Integer */
+.highlight .mo { color: #009999 } /* Literal.Number.Oct */
+.highlight .sb { color: #d14 } /* Literal.String.Backtick */
+.highlight .sc { color: #d14 } /* Literal.String.Char */
+.highlight .sd { color: #d14 } /* Literal.String.Doc */
+.highlight .s2 { color: #d14 } /* Literal.String.Double */
+.highlight .se { color: #d14 } /* Literal.String.Escape */
+.highlight .sh { color: #d14 } /* Literal.String.Heredoc */
+.highlight .si { color: #d14 } /* Literal.String.Interpol */
+.highlight .sx { color: #d14 } /* Literal.String.Other */
+.highlight .sr { color: #009926 } /* Literal.String.Regex */
+.highlight .s1 { color: #d14 } /* Literal.String.Single */
+.highlight .ss { color: #990073 } /* Literal.String.Symbol */
+.highlight .bp { color: #999999 } /* Name.Builtin.Pseudo */
+.highlight .vc { color: #008080 } /* Name.Variable.Class */
+.highlight .vg { color: #008080 } /* Name.Variable.Global */
+.highlight .vi { color: #008080 } /* Name.Variable.Instance */
+.highlight .il { color: #009999 } /* Literal.Number.Integer.Long */
+
+.type-csharp .highlight .k { color: #0000FF }
+.type-csharp .highlight .kt { color: #0000FF }
+.type-csharp .highlight .nf { color: #000000; font-weight: normal }
+.type-csharp .highlight .nc { color: #2B91AF }
+.type-csharp .highlight .nn { color: #000000 }
+.type-csharp .highlight .s { color: #A31515 }
+.type-csharp .highlight .sc { color: #A31515 }
+
+
+</style></head><body><header><div class="heading"><h1>cronj</h1><h3>task scheduling and simulation</h3><hr /><div class="info"><h5>Author: Chris Zheng<b>&nbsp;&nbsp;<a href="mailto:z@caudate.me">(z@caudate.me)</a></b></h5><h5>Library: v0.9.6</h5><h5>Date: 30 September 2013</h5><h5>Website: <a href="http://github.com/zcaudate/cronj">http://github.com/zcaudate/cronj</a></h5><h5>Generated By: <a href="http://www.github.com/zcaudate/lein-midje-doc">MidjeDoc</a></h5></div><br /><hr /></div><h4><a href="#installation">1 &nbsp; Installation</a></h4><h4><a href="#background">2 &nbsp; Background</a></h4><h4><a href="#design">3 &nbsp; Design</a></h4><h5>&nbsp;&nbsp;<i><a href="#seperation-of-concerns">3.1 &nbsp; Seperation of Concerns</a></i></h5><h5>&nbsp;&nbsp;<i><a href="#thread-management">3.2 &nbsp; Thread Management</a></i></h5><h5>&nbsp;&nbsp;<i><a href="#simulation-testing">3.3 &nbsp; Simulation Testing</a></i></h5><h4><a href="#walkthrough">4 &nbsp; Walkthrough</a></h4><h5>&nbsp;&nbsp;<i><a href="#creating-a-task">4.1 &nbsp; Creating a Task</a></i></h5><h5>&nbsp;&nbsp;<i><a href="#running-tasks">4.2 &nbsp; Running Tasks</a></i></h5><h5>&nbsp;&nbsp;<i><a href="#running-simulations">4.3 &nbsp; Running Simulations</a></i></h5><h5>&nbsp;&nbsp;&nbsp;&nbsp;<i><a href="#y2k-revisited">4.3.1 &nbsp; Y2K Revisited</a></i></h5><h5>&nbsp;&nbsp;&nbsp;&nbsp;<i><a href="#single-threaded">4.3.2 &nbsp; Single Threaded</a></i></h5><h5>&nbsp;&nbsp;&nbsp;&nbsp;<i><a href="#interval-and-pause">4.3.3 &nbsp; Interval and Pause</a></i></h5><h5>&nbsp;&nbsp;&nbsp;&nbsp;<i><a href="#speeding-up">4.3.4 &nbsp; Speeding Up</a></i></h5><h5>&nbsp;&nbsp;<i><a href="#task-management">4.4 &nbsp; Task Management</a></i></h5><h5>&nbsp;&nbsp;&nbsp;&nbsp;<i><a href="#showing-threads">4.4.1 &nbsp; Showing Threads</a></i></h5><h5>&nbsp;&nbsp;&nbsp;&nbsp;<i><a href="#killing-threads">4.4.2 &nbsp; Killing Threads</a></i></h5><h5>&nbsp;&nbsp;<i><a href="#hooks">4.5 &nbsp; Pre and Post Hooks</a></i></h5><h4><a href="#api-reference">5 &nbsp; API Reference</a></h4><h5>&nbsp;&nbsp;<i><a href="#cronj">5.1 &nbsp; cronj</a></i></h5><h5>&nbsp;&nbsp;&nbsp;&nbsp;<i><a href="#crontab">5.1.1 &nbsp; crontab</a></i></h5><h5>&nbsp;&nbsp;<i><a href="#system-commands">5.2 &nbsp; system commands</a></i></h5><h5>&nbsp;&nbsp;&nbsp;&nbsp;<i><a href="#start!">5.2.1 &nbsp; start!</a></i></h5><h5>&nbsp;&nbsp;&nbsp;&nbsp;<i><a href="#stop!">5.2.2 &nbsp; stop!</a></i></h5><h5>&nbsp;&nbsp;&nbsp;&nbsp;<i><a href="#shutdown!">5.2.3 &nbsp; shutdown!</a></i></h5><h5>&nbsp;&nbsp;&nbsp;&nbsp;<i><a href="#restart!">5.2.4 &nbsp; restart!</a></i></h5><h5>&nbsp;&nbsp;&nbsp;&nbsp;<i><a href="#stopped?">5.2.5 &nbsp; stopped?</a></i></h5><h5>&nbsp;&nbsp;&nbsp;&nbsp;<i><a href="#running?">5.2.6 &nbsp; running?</a></i></h5><h5>&nbsp;&nbsp;&nbsp;&nbsp;<i><a href="#uptime">5.2.7 &nbsp; uptime</a></i></h5><h5>&nbsp;&nbsp;<i><a href="#task-scheduling">5.3 &nbsp; task scheduling</a></i></h5><h5>&nbsp;&nbsp;&nbsp;&nbsp;<i><a href="#enable-task">5.3.1 &nbsp; enable-task</a></i></h5><h5>&nbsp;&nbsp;&nbsp;&nbsp;<i><a href="#disable-task">5.3.2 &nbsp; disable-task</a></i></h5><h5>&nbsp;&nbsp;&nbsp;&nbsp;<i><a href="#task-enabled?">5.3.3 &nbsp; task-enabled?</a></i></h5><h5>&nbsp;&nbsp;&nbsp;&nbsp;<i><a href="#task-disabled?">5.3.4 &nbsp; task-disabled?</a></i></h5><h5>&nbsp;&nbsp;<i><a href="#task-simulation">5.4 &nbsp; task simulation</a></i></h5><h5>&nbsp;&nbsp;&nbsp;&nbsp;<i><a href="#simulate">5.4.1 &nbsp; simulate</a></i></h5><h5>&nbsp;&nbsp;&nbsp;&nbsp;<i><a href="#simulate-st">5.4.2 &nbsp; simulate-st</a></i></h5><h5>&nbsp;&nbsp;<i><a href="#thread-management">5.5 &nbsp; thread management</a></i></h5><h5>&nbsp;&nbsp;&nbsp;&nbsp;<i><a href="#get-ids">5.5.1 &nbsp; get-ids</a></i></h5><h5>&nbsp;&nbsp;&nbsp;&nbsp;<i><a href="#get-task">5.5.2 &nbsp; get-task</a></i></h5><h5>&nbsp;&nbsp;&nbsp;&nbsp;<i><a href="#get-threads">5.5.3 &nbsp; get-threads</a></i></h5><h5>&nbsp;&nbsp;&nbsp;&nbsp;<i><a href="#exec!">5.5.4 &nbsp; exec!</a></i></h5><h5>&nbsp;&nbsp;&nbsp;&nbsp;<i><a href="#kill!">5.5.5 &nbsp; kill!</a></i></h5><h4><a href="#end-notes">6 &nbsp; End Notes</a></h4><br /></header><section><div class="heading"><h1>cronj</h1><h3>task scheduling and simulation</h3><hr /><div class="info"><h5>Author: Chris Zheng<b>&nbsp;&nbsp;<a href="mailto:z@caudate.me">(z@caudate.me)</a></b></h5><h5>Library: v0.9.6</h5><h5>Date: 30 September 2013</h5><h5>Website: <a href="http://github.com/zcaudate/cronj">http://github.com/zcaudate/cronj</a></h5><h5>Generated By: <a href="http://www.github.com/zcaudate/lein-midje-doc">MidjeDoc</a></h5></div><br /><hr /></div><div><a name="installation"></a><h2><b>1 &nbsp;&nbsp; Installation</b></h2></div><div><p>Add to <code>project.clj</code></p></div><div><div class="highlight"><pre><span class="p">[</span><span class="nv">im.chit/cronj</span> <span class="s">&quot;0.9.6&quot;</span><span class="p">]</span>
+</pre></div>
+</div><div><p>All functions are in the <code>cronj.core</code> namespace.</p></div><div><div class="highlight"><pre><span class="p">(</span><span class="nf">use</span> <span class="ss">&#39;cronj.core</span><span class="p">)</span>
+</pre></div>
+</div><div><a name="background"></a><h2><b>2 &nbsp;&nbsp; Background</b></h2></div><div><p><code>cronj</code> was built for a project of mine back in 2012. The system needed to record video footage from multiple ip-cameras in fifteen minute blocks, as well as to save pictures from each camera (one picture every second). All saved files needed a timestamp allowing for easy file management and retrieval.</p><p>At that time, <code>quartzite</code>, <code>at-at</code> and <code>monotony</code> were the most popular options. After coming up with a list of design features and weighing up all options, I decided to write my own instead. As a core component of the original project, <code>cronj</code> has been operational now since October 2012. A couple of major rewrites and api rejuggling were done, but the api has been very stable from version <code>0.6</code> onwards.</p><p>There are now many more scheduling libraries in the clojure world:</p><ul><li><a href='https://github.com/overtone/at-at'>at-at</a></li><li><a href='https://github.com/james-henderson/chime'>chime</a></li><li><a href='https://github.com/kognate/clj-cronlike'>clj-cronlike</a></li><li><a href='http://www.sauronsoftware.it/projects/cron4j'>cron4j</a></li><li><a href='https://github.com/aredington/monotony'>monotony</a></li><li><a href='https://github.com/michaelklishin/quartzite'>quartzite</a></li><li><a href='https://github.com/AdamClements/schejulure'>schejulure</a></li></ul><p>With so many options, and so many different ways to define task schedules, why choose <code>cronj</code>? I have listed a number of <a href='#design'>design</a> decisions that make it beneficial. However, for those that are impatient, cut to the chase, by skipping to the <a href='#running-simulations'>simulations</a> section.</p></div><div><a name="design"></a><h2><b>3 &nbsp;&nbsp; Design</b></h2></div><div><p><code>cronj</code> was built around a concept of a <strong>task</strong>. A task has two components:<ul><li>A <code>handler</code> (what is to be done)</li><li>A <code>schedule</code> (when it should be done)</li></ul>Tasks are <em>triggered</em> by a <code>scheduler</code> who in-turn is notified of the current time by a <code>timer</code>. If a task was scheduled to run at that time, it's <code>handler</code> would be run in a seperate thread.</p></div><div><div class="highlight"><pre><span class="c1">; cronj                schedule</span>
+<span class="c1">; --------------       +-------------------------+</span>
+<span class="c1">; scheduler watches    |  &#39;* 8 /2 7-9 2,3 * *&#39;   |</span>
+<span class="c1">; the timer and        +-------------------------+</span>
+<span class="c1">; triggers tasks       |  :sec    [:*]           |</span>
+<span class="c1">; to execute at        |  :min    [:# 8]         |</span>
+<span class="c1">; the scheduled time   |  :hour   [:| 2]         |</span>
+<span class="c1">;                      |  :dayw   [:- 7 9]       |</span>
+<span class="c1">;                      |  :daym   [:# 2] [:# 3]  |</span>
+<span class="c1">;                      |  :month  [:*]           |</span>
+<span class="c1">;                      |  :year   [:*]           |</span>
+<span class="c1">;                      +-----------+-------------+</span>
+<span class="c1">; task                              |                        XXXXXXXXX</span>
+<span class="c1">; +-----------------+   +-----------+-----+                XX         XX</span>
+<span class="c1">; |:id              |   |           |     |\             XX  timer      XX</span>
+<span class="c1">; |:desc            +---+-+:task    |     | \           X                 X</span>
+<span class="c1">; |:handler         |   |  :schedule+     |  \         X     :start-time   X</span>
+<span class="c1">; |:pre-hook        |   |  :enabled       | entry      X     :thread       X+----+</span>
+<span class="c1">; |:post-hook       |   |  :opts          |    `.      X     :last-check   X     |</span>
+<span class="c1">; |:enabled         |   |                 |      \      X    :interval    X      |</span>
+<span class="c1">; |:args            |   _-------._--------,       \      XX             XX       |</span>
+<span class="c1">; |:running         |    `-._     `..      `.      \       XX         XX         +</span>
+<span class="c1">; |:last-exec       |        `-._    `-._    `.     \        XXXXXXXXX         watch</span>
+<span class="c1">; |:last-successful |            `-._    `-._  `.    `.                          +</span>
+<span class="c1">; +----------+------+                `-._    `-. `.    \                         |</span>
+<span class="c1">;                         +----+----+----`-._-+-`-.`.---&gt;----+----+----+----+----+----+</span>
+<span class="c1">;                         |    |    |    |   `-..  | `. |    |    |    |    |    |    |</span>
+<span class="c1">;                         +----+----+----+----+--`-.---&#39;+----+----+----+----+----+----+</span>
+<span class="c1">;                                                                          scheduler</span>
+</pre></div>
+</div><div><a name="seperation-of-concerns"></a><h3>3.1 &nbsp;&nbsp; Seperation of Concerns</h3></div><div><p>A task handler is just a function taking two arguments:</p></div><div><div class="highlight"><pre><span class="p">(</span><span class="k">fn </span><span class="p">[</span><span class="nv">t</span> <span class="nv">opts</span><span class="p">]</span>
+    <span class="p">(</span><span class="nf">...</span> <span class="nv">perform</span> <span class="nv">a</span> <span class="nv">task</span> <span class="nv">...</span><span class="p">))</span>
+</pre></div>
+</div><div><p><strong><code>t</code></strong> represents the time at which the handler was called. This solves the problem of <em>time synchronisation</em>. For example, I may have three tasks scheduled to run at a same time:</p><ul><li>perform a calculation and write the result to the database</li><li>perform a http call and write result to the database</li><li>load some files, write to single output then store file location to the database.</li></ul><p>All these tasks will end at different times. To retrospectively reasoning about how all three tasks were synced, each handler is required to accept the triggred time <code>t</code> as an argument.</p><p><strong><code>opts</code></strong> is a hashmap, for example <code>{:path '/app/videos'}</code>. It has been found that user customisations such as server addresses and filenames, along with job schedules are usually specified at the top-most tier of the application whilst handler logic is usually in the middle-tier. Having an extra <code>opts</code> argument allow for better seperation of concerns and more readable code.</p></div><div><a name="thread-management"></a><h3>3.2 &nbsp;&nbsp; Thread Management</h3></div><div><p>In reviewing other scheduling libraries, it was found that fully-featured thread management capabilities were lacking. <code>cronj</code> was designed with these features in mind:</p><ul><li>tasks can be triggered to start manually at any time.</li><li>tasks can start at the next scheduled time before the previous thread has finished running so that multiple threads can be running simultaneously for a single task.</li><li><em>pre-</em> and <em>post-</em> hooks can be defined for better seperation of setup/notification/cleanup code from handler body.</li><li>running threads can be listed.</li><li>normal and abnormal termination:<ul><li>kill a running thread</li><li>kill all running threads in a task</li><li>kill all threads</li><li>disable task but let running threads finish</li><li>stop timer but let running threads finish</li><li>shutdown timer, kill all running threads</li></ul></li></ul></div><div><a name="simulation-testing"></a><h3>3.3 &nbsp;&nbsp; Simulation Testing</h3></div><div><p>Because the <code>timer</code> and the <code>scheduler</code> modules have been completely decoupled, it was very easy to add a simulation component into <code>cronj</code>. Simulation has some very handy features:<ul><li>Simulate how the entire system would behave over a long periods of time</li><li>Generating test inputs for other applications.</li><li>Both single and multi-threaded execution strategies are supported.</li></ul></div><div><a name="walkthrough"></a><h2><b>4 &nbsp;&nbsp; Walkthrough</b></h2></div><div><p>In this section all the important and novel features and use cases for <code>cronj</code> will be shown. Interesting examples include: <a href='#running-simulations'>simulation</a>, <a href='#task-management'>task management</a> and <a href='#hooks'>hooks</a>.</p></div><div><a name="creating-a-task"></a><h3>4.1 &nbsp;&nbsp; Creating a Task</h3></div><div><p><code>print-handler</code> outputs the value of <code>{:output opts}</code> and the time <code>t</code>.</p></div><div><div class="highlight"><pre><span class="p">(</span><span class="kd">defn </span><span class="nv">print-handler</span> <span class="p">[</span><span class="nv">t</span> <span class="nv">opts</span><span class="p">]</span>
+  <span class="p">(</span><span class="nb">println </span><span class="p">(</span><span class="ss">:output</span> <span class="nv">opts</span><span class="p">)</span> <span class="s">&quot;: &quot;</span> <span class="nv">t</span><span class="p">))</span>
+</pre></div>
+</div><div><p><code>print-task</code> defines the actual task to be run. Note that it is just a map.<ul><li><code>:handler</code> set to <code>print-handler</code></li><li><code>:schedule</code> set for task to run every <code>2</code> seconds</li><li><code>:opts</code> can be customised</li></ul></div><div><div class="highlight"><pre><span class="p">(</span><span class="k">def </span><span class="nv">print-task</span>
+  <span class="p">{</span><span class="ss">:id</span> <span class="s">&quot;print-task&quot;</span>
+   <span class="ss">:handler</span> <span class="nv">print-handler</span>
+   <span class="ss">:schedule</span> <span class="s">&quot;/2 * * * * * *&quot;</span>
+   <span class="ss">:opts</span> <span class="p">{</span><span class="ss">:output</span> <span class="s">&quot;Hello There&quot;</span><span class="p">}})</span>
+</pre></div>
+</div><div><a name="running-tasks"></a><h3>4.2 &nbsp;&nbsp; Running Tasks</h3></div><div><p>Once the task is defined, <code>cronj</code> is called to create the task-scheduler (<code>cj</code>).</p></div><div><div class="highlight"><pre><span class="p">(</span><span class="k">def </span><span class="nv">cj</span> <span class="p">(</span><span class="nf">cronj</span> <span class="ss">:entries</span> <span class="p">[</span><span class="nv">print-task</span><span class="p">]))</span>
+</pre></div>
+</div><div><p>Calling <code>start!</code> on <code>cj</code> will start the timer and <code>print-handler</code> will be triggered every two seconds. Calling <code>stop!</code> on <code>cj</code> will stop all outputs</p></div><div><div class="highlight"><pre><span class="p">(</span><span class="nf">start!</span> <span class="nv">cj</span><span class="p">)</span>
+
+<span class="c1">;; &gt; Hello There :  #&lt;DateTime 2013-09-29T14:42:54.000+10:00&gt;</span>
+
+       <span class="nv">....</span> <span class="nv">wait</span> <span class="mi">2</span> <span class="nv">secs</span> <span class="nv">...</span>
+
+<span class="c1">;; &gt; Hello There :  #&lt;DateTime 2013-09-29T14:42:56.000+10:00&gt;</span>
+
+       <span class="nv">....</span> <span class="nv">wait</span> <span class="mi">2</span> <span class="nv">secs</span> <span class="nv">...</span>
+
+<span class="c1">;; &gt; Hello There :  #&lt;DateTime 2013-09-29T14:42:58.000+10:00&gt;</span>
+
+       <span class="nv">....</span> <span class="nv">wait</span> <span class="mi">2</span> <span class="nv">secs</span> <span class="nv">...</span>
+
+<span class="c1">;; &gt; Hello There :  #&lt;DateTime 2013-09-29T14:43:00.000+10:00&gt;</span>
+
+<span class="p">(</span><span class="nf">stop!</span> <span class="nv">cj</span><span class="p">)</span>
+</pre></div>
+</div><div><a name="running-simulations"></a><h3>4.3 &nbsp;&nbsp; Running Simulations</h3></div><div><p>Simulations are a great way to check your application for errors as they provide constant time inputs. This allows an entire system to be tested for correctness. How <code>simulate</code> works is that it decouples the <code>timer</code> from the <code>scheduler</code> and tricks the <code>scheduler</code> to trigger on the range of date inputs provided.</p></div><div><a name="y2k-revisited"></a><h3><i>4.3.1 &nbsp;&nbsp; Y2K Revisited</i></h3></div><div><p>For instance, we wish to test that our <code>print-handler</code> method was not affected by the Y2K Bug. <code>T1</code> and <code>T2</code> are defined as start and end times:</p></div><div><div class="highlight"><pre><span class="p">(</span><span class="k">def </span><span class="nv">T1</span> <span class="p">(</span><span class="nf">local-time</span> <span class="mi">1999</span> <span class="mi">12</span> <span class="mi">31</span> <span class="mi">23</span> <span class="mi">59</span> <span class="mi">58</span><span class="p">))</span>
+
+<span class="p">(</span><span class="k">def </span><span class="nv">T2</span> <span class="p">(</span><span class="nf">local-time</span> <span class="mi">2000</span> <span class="mi">1</span>  <span class="mi">1</span>  <span class="mi">0</span>  <span class="mi">0</span> <span class="mi">2</span><span class="p">))</span>
+</pre></div>
+</div><div><p>We can simulate events by calling <code>simulate</code> on <code>cj</code> with a start and end time. The function will trigger registered tasks to run beginning at T1, incrementing by 1 sec each time until T2. Note that in this example, there are three threads created for <code>print-handler</code>. The printed output may be out of order because of indeterminancy of threads (we can fix this later).</p></div><div><div class="highlight"><pre><span class="p">(</span><span class="nf">simulate</span> <span class="nv">cj</span> <span class="nv">T1</span> <span class="nv">T2</span><span class="p">)</span>
+
+           <span class="nv">....</span> <span class="nv">instantly</span> <span class="nv">...</span>
+
+<span class="c1">;; &gt; Hello There :  #&lt;DateTime 1999-12-31T23:59:58.000+11:00&gt;</span>
+<span class="c1">;; &gt; Hello There :  #&lt;DateTime 2000-01-01T00:00:02.000+11:00&gt;    ;; out of order</span>
+<span class="c1">;; &gt; Hello There :  #&lt;DateTime 2000-01-01T00:00:00.000+11:00&gt;</span>
+           
+</pre></div>
+</div><div><a name="single-threaded"></a><h3><i>4.3.2 &nbsp;&nbsp; Single Threaded</i></h3></div><div><p>To keep ordering of the <code>println</code> outputs, <code>simulate-st</code> can be used. This will run <code>print-handler</code> calls on a single thread and so will keep order of outputs. Because of the sequential nature of this type of simulation, it is advised that <code>simulate-st</code> be used only if there are no significant pauses or thread blocking in the tasks.</p></div><div><div class="highlight"><pre><span class="p">(</span><span class="nf">simulate-st</span> <span class="nv">cj</span> <span class="nv">T1</span> <span class="nv">T2</span><span class="p">)</span>
+
+           <span class="nv">....</span> <span class="nv">instantly</span> <span class="nv">...</span>
+
+<span class="c1">;; &gt; Hello There :  #&lt;DateTime 1999-12-31T23:59:58.000+11:00&gt;</span>
+<span class="c1">;; &gt; Hello There :  #&lt;DateTime 2000-01-01T00:00:00.000+11:00&gt;</span>
+<span class="c1">;; &gt; Hello There :  #&lt;DateTime 2000-01-01T00:00:02.000+11:00&gt;</span>
+           
+</pre></div>
+</div><div><a name="interval-and-pause"></a><h3><i>4.3.3 &nbsp;&nbsp; Interval and Pause</i></h3></div><div><p>Two other arguments for <code>simulate</code> and <code>simulate-st</code> are:<ul><li>the time interval <code>&#40;in secs&#41;</code> between the current time-point and the next time-point (the default is 1)</li><li>the pause <code>&#40;in ms&#41;</code> to take in triggering the next time-point (the default is 0)</li></ul>It can be seen that we can simulate the actual speed of outputs by keeping the interval as 1 and increasing the pause time to 1000ms</p></div><div><div class="highlight"><pre><span class="p">(</span><span class="nf">simulate</span> <span class="nv">cj</span> <span class="nv">T1</span> <span class="nv">T2</span> <span class="mi">1</span> <span class="mi">1000</span><span class="p">)</span>
+
+<span class="c1">;; &gt; Hello There :  #&lt;DateTime 1999-12-31T23:59:58.000+11:00&gt;</span>
+
+       <span class="nv">....</span> <span class="nv">wait</span> <span class="mi">2</span> <span class="nv">secs</span> <span class="nv">...</span>
+
+<span class="c1">;; &gt; Hello There :  #&lt;DateTime 2000-01-01T00:00:00.000+11:00&gt;</span>
+
+       <span class="nv">....</span> <span class="nv">wait</span> <span class="mi">2</span> <span class="nv">secs</span> <span class="nv">...</span>
+
+<span class="c1">;; &gt; Hello There :  #&lt;DateTime 2000-01-01T00:00:02.000+11:00&gt;</span>
+       
+</pre></div>
+</div><div><a name="speeding-up"></a><h3><i>4.3.4 &nbsp;&nbsp; Speeding Up</i></h3></div><div><p>In the following example, the interval has been increased to 2 seconds whilst the pause time has decreased to 100ms. This results in a 20x increase in the speed of outputs.</p></div><div><div class="highlight"><pre><span class="p">(</span><span class="nf">simulate</span> <span class="nv">cj</span> <span class="nv">T1</span> <span class="nv">T2</span> <span class="mi">2</span> <span class="mi">100</span><span class="p">)</span>
+
+<span class="c1">;; &gt; Hello There :  #&lt;DateTime 1999-12-31T23:59:58.000+11:00&gt;</span>
+
+       <span class="nv">....</span> <span class="nv">wait</span> <span class="mi">100</span> <span class="nv">msecs</span> <span class="nv">...</span>
+
+<span class="c1">;; &gt; Hello There :  #&lt;DateTime 2000-01-01T00:00:00.000+11:00&gt;</span>
+
+       <span class="nv">....</span> <span class="nv">wait</span> <span class="mi">100</span> <span class="nv">msecs</span> <span class="nv">...</span>
+
+<span class="c1">;; &gt; Hello There :  #&lt;DateTime 2000-01-01T00:00:02.000+11:00&gt;</span>
+       
+</pre></div>
+</div><div><p>Being able to adjust these simulation parameters are really powerful testing tools and saves an incredible amount of time in development. For example, we can quickly test the year long output of a task that is scheduled to run once an hour very quickly by making the interval 3600 seconds and the pause time to the same length of time that the task takes to finish.</p><p>Through simulations, task-scheduling can now be tested and entire systems just got easier to manage and reason about!</p></div><div><a name="task-management"></a><h3>4.4 &nbsp;&nbsp; Task Management</h3></div><div><p>Task management capabilities of <code>cronj</code> will be demonstrated by first creating a <code>cronj</code> object with two task entries labeled <code>l1</code> and <code>l2</code> doing nothing but sleeping for a long time:</p></div><div><div class="highlight"><pre><span class="p">(</span><span class="k">def </span><span class="nv">cj</span>
+  <span class="p">(</span><span class="nf">cronj</span> <span class="ss">:entries</span>
+         <span class="p">[{</span><span class="ss">:id</span>       <span class="ss">:l1</span>
+           <span class="ss">:handler</span>  <span class="p">(</span><span class="k">fn </span><span class="p">[</span><span class="nv">dt</span> <span class="nv">opts</span><span class="p">]</span> <span class="p">(</span><span class="nf">Thread/sleep</span> <span class="mi">30000000000000</span><span class="p">))</span>
+           <span class="ss">:schedule</span> <span class="s">&quot;/2 * * * * * *&quot;</span>
+           <span class="ss">:opts</span> <span class="p">{</span><span class="ss">:data</span> <span class="s">&quot;foo&quot;</span><span class="p">}}</span>
+          <span class="p">{</span><span class="ss">:id</span>       <span class="ss">:l2</span>
+           <span class="ss">:handler</span>  <span class="p">(</span><span class="k">fn </span><span class="p">[</span><span class="nv">dt</span> <span class="nv">opts</span><span class="p">]</span> <span class="p">(</span><span class="nf">Thread/sleep</span> <span class="mi">30000000000000</span><span class="p">))</span>
+           <span class="ss">:schedule</span> <span class="s">&quot;0-2 * * * * * *&quot;</span>
+           <span class="ss">:opts</span> <span class="p">{</span><span class="ss">:data</span> <span class="s">&quot;bar&quot;</span><span class="p">}}]))</span>
+</pre></div>
+</div><div><a name="showing-threads"></a><h3><i>4.4.1 &nbsp;&nbsp; Showing Threads</i></h3></div><div><p>The task will be triggered using the <code>exec!</code> command. This is done for play purposes. Normal use would involve calling <code>get-threads</code> after <code>start!</code> has been called.</p></div><div><div class="highlight"><pre><span class="p">(</span><span class="nf">get-threads</span> <span class="nv">cj</span> <span class="ss">:l1</span><span class="p">)</span>     <span class="c1">;; See that there are no threads running</span>
+<span class="nv">=&gt;</span> <span class="p">[]</span>                    <span class="c1">;;    - :l1 is empty</span>
+
+<span class="p">(</span><span class="nf">get-threads</span> <span class="nv">cj</span> <span class="ss">:l2</span><span class="p">)</span>
+<span class="nv">=&gt;</span> <span class="p">[]</span>                    <span class="c1">;;    - :l2 is empty</span>
+
+<span class="p">(</span><span class="nf">exec!</span> <span class="nv">cj</span> <span class="ss">:l1</span> <span class="nv">T1</span><span class="p">)</span>        <span class="c1">;; Launch :l1 with time of T1</span>
+
+<span class="p">(</span><span class="nf">get-threads</span> <span class="nv">cj</span> <span class="ss">:l1</span><span class="p">)</span>
+<span class="nv">=&gt;</span> <span class="p">[{</span><span class="ss">:tid</span> <span class="nv">T1</span> <span class="ss">:opts</span> <span class="p">{</span><span class="ss">:data</span> <span class="s">&quot;foo&quot;</span><span class="p">}}]</span>  <span class="c1">;; l1 now has one running thread</span>
+
+<span class="p">(</span><span class="nf">exec!</span> <span class="nv">cj</span> <span class="ss">:l1</span> <span class="nv">T2</span><span class="p">)</span>        <span class="c1">;; Launch :l2 with time of T2</span>
+
+<span class="p">(</span><span class="nf">get-threads</span> <span class="nv">cj</span> <span class="ss">:l1</span><span class="p">)</span>
+<span class="nv">=&gt;</span> <span class="p">[{</span><span class="ss">:tid</span> <span class="nv">T1</span> <span class="ss">:opts</span> <span class="p">{</span><span class="ss">:data</span> <span class="s">&quot;foo&quot;</span><span class="p">}}</span>   <span class="c1">;; l1 now has two running threads</span>
+    <span class="p">{</span><span class="ss">:tid</span> <span class="nv">T2</span> <span class="ss">:opts</span> <span class="p">{</span><span class="ss">:data</span> <span class="s">&quot;foo&quot;</span><span class="p">}}]</span>
+
+
+<span class="p">(</span><span class="nf">exec!</span> <span class="nv">cj</span> <span class="ss">:l2</span> <span class="nv">T2</span> <span class="p">{</span><span class="ss">:data</span> <span class="s">&quot;new&quot;</span><span class="p">})</span>     <span class="c1">;; Launch :l2 with time of T2</span>
+<span class="p">(</span><span class="nf">get-threads</span> <span class="nv">cj</span> <span class="ss">:l2</span><span class="p">)</span>
+<span class="nv">=&gt;</span> <span class="p">[{</span><span class="ss">:tid</span> <span class="nv">T2</span> <span class="ss">:opts</span> <span class="p">{</span><span class="ss">:data</span> <span class="s">&quot;new&quot;</span><span class="p">}}]</span>  <span class="c1">;; l2 now has one running thread</span>
+
+<span class="p">(</span><span class="nf">get-threads</span> <span class="nv">cj</span><span class="p">)</span>     <span class="c1">;; if no id is given, all running threads can be seen</span>
+<span class="nv">=&gt;</span> <span class="p">[{</span><span class="ss">:id</span> <span class="ss">:l1</span>, <span class="ss">:running</span> <span class="p">[{</span><span class="ss">:tid</span> <span class="nv">T1</span> <span class="ss">:opts</span> <span class="p">{</span><span class="ss">:data</span> <span class="s">&quot;foo&quot;</span><span class="p">}}</span>
+                        <span class="p">{</span><span class="ss">:tid</span> <span class="nv">T2</span> <span class="ss">:opts</span> <span class="p">{</span><span class="ss">:data</span> <span class="s">&quot;foo&quot;</span><span class="p">}}]}</span>
+    <span class="p">{</span><span class="ss">:id</span> <span class="ss">:l2</span>, <span class="ss">:running</span> <span class="p">[{</span><span class="ss">:tid</span> <span class="nv">T2</span> <span class="ss">:opts</span> <span class="p">{</span><span class="ss">:data</span> <span class="s">&quot;new&quot;</span><span class="p">}}]}]</span>
+</pre></div>
+</div><div><a name="killing-threads"></a><h3><i>4.4.2 &nbsp;&nbsp; Killing Threads</i></h3></div><div><div class="highlight"><pre><span class="p">(</span><span class="nf">kill!</span> <span class="nv">cj</span> <span class="ss">:l1</span> <span class="nv">T1</span><span class="p">)</span>       <span class="c1">;; Kill :l1 thread starting at time T1</span>
+<span class="p">(</span><span class="nf">get-threads</span> <span class="nv">cj</span> <span class="ss">:l1</span><span class="p">)</span>
+<span class="nv">=&gt;</span> <span class="p">[{</span><span class="ss">:opts</span> <span class="p">{</span><span class="ss">:data</span> <span class="s">&quot;foo&quot;</span><span class="p">}</span>, <span class="ss">:tid</span> <span class="nv">T2</span><span class="p">}]</span> <span class="c1">;; l1 now has one running thread</span>
+
+<span class="p">(</span><span class="nf">kill!</span> <span class="nv">cj</span> <span class="ss">:l1</span><span class="p">)</span>          <span class="c1">;; Kill all :l1 threads</span>
+<span class="p">(</span><span class="nf">get-threads</span> <span class="nv">cj</span> <span class="ss">:l1</span><span class="p">)</span>
+<span class="nv">=&gt;</span> <span class="p">[]</span>                   <span class="c1">;; l1 now has no threads</span>
+
+<span class="p">(</span><span class="nf">kill!</span> <span class="nv">cj</span><span class="p">)</span>              <span class="c1">;; Kill everything in cj</span>
+<span class="p">(</span><span class="nf">get-threads</span> <span class="nv">cj</span><span class="p">)</span>
+<span class="nv">=&gt;</span> <span class="p">[{</span><span class="ss">:id</span> <span class="ss">:l1</span>, <span class="ss">:running</span> <span class="p">[]}</span>    <span class="c1">;; All threads have been killed</span>
+    <span class="p">{</span><span class="ss">:id</span> <span class="ss">:l2</span>, <span class="ss">:running</span> <span class="p">[]}]</span>
+</pre></div>
+</div><div><a name="hooks"></a><h3>4.5 &nbsp;&nbsp; Pre and Post Hooks</h3></div><div><p>Having pre- and post- hook entries allow additional processing to be done outside of the handler. They also have the same function signature as the task handler. An example below can be seen where data is passed from one handler to another:</p></div><div><div class="highlight"><pre><span class="p">(</span><span class="k">def </span><span class="nv">cj</span>
+  <span class="p">(</span><span class="nf">cronj</span>
+   <span class="ss">:entries</span> <span class="p">[{</span><span class="ss">:id</span>        <span class="ss">:hook</span>
+              <span class="ss">:desc</span>      <span class="s">&quot;This is showing how a hook example should work&quot;</span>
+              <span class="ss">:handler</span>   <span class="p">(</span><span class="k">fn </span><span class="p">[</span><span class="nv">dt</span> <span class="nv">opts</span><span class="p">]</span>
+                           <span class="p">(</span><span class="nb">println </span><span class="s">&quot;In handle, opts:&quot;</span> <span class="nv">opts</span><span class="p">)</span>
+                           <span class="p">(</span><span class="nf">Thread/sleep</span> <span class="mi">1000</span><span class="p">)</span> <span class="c1">;; Do Something</span>
+                           <span class="ss">:handler-result</span><span class="p">)</span>
+              <span class="ss">:pre-hook</span>  <span class="p">(</span><span class="k">fn </span><span class="p">[</span><span class="nv">dt</span> <span class="nv">opts</span><span class="p">]</span>
+                           <span class="p">(</span><span class="nb">println </span><span class="s">&quot;In pre-hook,&quot;</span> <span class="s">&quot;opts:&quot;</span> <span class="nv">opts</span><span class="p">)</span>
+                           <span class="p">(</span><span class="nb">assoc </span><span class="nv">opts</span> <span class="ss">:pre-hook</span> <span class="ss">:pre-hook-data</span><span class="p">))</span>
+              <span class="ss">:post-hook</span> <span class="p">(</span><span class="k">fn </span><span class="p">[</span><span class="nv">dt</span> <span class="nv">opts</span><span class="p">]</span>
+                           <span class="p">(</span><span class="nb">println </span><span class="s">&quot;In post-hook, opts: &quot;</span> <span class="nv">opts</span><span class="p">))</span>
+              <span class="ss">:opts</span>      <span class="p">{</span><span class="ss">:data</span> <span class="s">&quot;stuff&quot;</span><span class="p">}</span>
+              <span class="ss">:schedule</span>  <span class="s">&quot;* * * * * * *&quot;</span><span class="p">}]))</span>
+
+<span class="p">(</span><span class="nf">exec!</span> <span class="nv">cj</span> <span class="ss">:hook</span> <span class="nv">T1</span><span class="p">)</span>
+
+<span class="c1">;; &gt; In pre-hook, opts: {:data stuff}</span>
+<span class="c1">;; &gt; In handle, opts: {:data stuff, :pre-hook :pre-hook-data}</span>
+
+           <span class="nv">....</span> <span class="nv">wait</span> <span class="mi">1000</span> <span class="nv">msecs</span> <span class="nv">....</span>
+
+<span class="c1">;; &gt; In post-hook, opts:  {:data stuff, :pre-hook :pre-hook-data, :result :handler-result}</span>
+</pre></div>
+</div><div><p>As could be seen, the <code>:pre-hook</code> function can modify opts for use in the handler function while <code>:pre-hook</code> can take the result of the main handler and do something with it. I use it mostly for logging purposes.</p></div><div><a name="api-reference"></a><h2><b>5 &nbsp;&nbsp; API Reference</b></h2></div><div><a name="cronj"></a><h3>5.1 &nbsp;&nbsp; cronj</h3></div><div><p><code>cronj</code> constructs a task-scheduler object.</p></div><div><div class="highlight"><pre><span class="p">(</span><span class="nf">cronj</span> <span class="ss">:entries</span> <span class="nv">&lt;vector-of-tasks&gt;</span><span class="p">)</span>
+</pre></div>
+</div><div><p>An simple example:</p></div><div><div class="highlight"><pre><span class="p">(</span><span class="k">def </span><span class="nv">cnj</span>
+  <span class="p">(</span><span class="nf">cronj</span> <span class="ss">:entries</span>
+         <span class="p">[{</span><span class="ss">:id</span> <span class="s">&quot;print-task&quot;</span>
+           <span class="ss">:handler</span> <span class="p">(</span><span class="k">fn </span><span class="p">[</span><span class="nv">t</span> <span class="nv">opts</span><span class="p">]</span> <span class="p">(</span><span class="nb">println </span><span class="p">(</span><span class="ss">:output</span> <span class="nv">opts</span><span class="p">)</span> <span class="s">&quot;: &quot;</span> <span class="nv">t</span><span class="p">))</span>
+           <span class="ss">:schedule</span> <span class="s">&quot;/2 * * * * * *&quot;</span>
+           <span class="ss">:opts</span> <span class="p">{</span><span class="ss">:output</span> <span class="s">&quot;Hello There&quot;</span><span class="p">}}]))</span>
+</pre></div>
+</div><div><a name="crontab"></a><h3><i>5.1.1 &nbsp;&nbsp; crontab</i></h3></div><div><p>Each <code>cronj</code> task has a <code>:schedule</code> entry. The value is a string specifying when it is supposed to run. The string is of the same format as <code>crontab</code> -  seven elements seperated by spaces. The elements are used to match the time, expressed as seven numbers:</p><pre>
+ second minute hour day-of-week day-of-month month year
+</pre><p>The rules for a match between the crontab and the current time are:</p><ul><li><code>A</code>       means match on <code>A</code></li><li><code>&#42;</code>       means match on any number</li><li><code>E1,E2</code>   means match on both <code>E1</code> and <code>E2</code></li><li><code>A-B</code>     means match on any number between <code>A</code> and <code>B</code> inclusive</li><li><code>/N</code>      means match on any number divisible by <code>N</code></li><li><code>A-B/N</code>   means match on any number divisible by <code>N</code> between <code>A</code> and <code>B</code> inclusive</li></ul><p>Where <code>A</code>, <code>B</code> and <code>N</code> are numbers; <code>E1</code> and <code>E2</code> are expressions. All seven elements in the string have to match in order for the task to be triggered.</p></div><div><div class="highlight"><pre><span class="c1">;; Triggered every 5 seconds</span>
+
+<span class="s">&quot;/5 * * * * * *&quot;</span>
+
+
+<span class="c1">;; Triggered every 5 seconds between 32 and 60 seconds</span>
+
+<span class="s">&quot;32-60/5 * * * * * *&quot;</span>
+
+<span class="c1">;; Triggered every 5 seconds on the 9th aand 10th</span>
+<span class="c1">;; minute of every hour on every Friday from June</span>
+<span class="c1">;; to August between years 2012 to 2020.</span>
+
+<span class="s">&quot;/5  9,10  * 5 * 6-8 2012-2020&quot;</span>
+</pre></div>
+</div><div><a name="system-commands"></a><h3>5.2 &nbsp;&nbsp; system commands</h3></div><div><p>System commands mainly work with the cronj timer.</p></div><div><a name="start!"></a><h3><i>5.2.1 &nbsp;&nbsp; start!</i></h3></div><div><p>Starts up the timer such that tasks are launched at the scheduled time</p></div><div><div class="highlight"><pre><span class="p">(</span><span class="nf">start!</span> <span class="nv">&lt;cnj&gt;</span><span class="p">)</span>
+</pre></div>
+</div><div><a name="stop!"></a><h3><i>5.2.2 &nbsp;&nbsp; stop!</i></h3></div><div><p>Stops the timer. New task threads will not be launched. However, exisiting tasks threads will not be killed and finish naturally.</p></div><div><div class="highlight"><pre><span class="p">(</span><span class="nf">stop!</span> <span class="nv">&lt;cnj&gt;</span><span class="p">)</span>
+</pre></div>
+</div><div><a name="shutdown!"></a><h3><i>5.2.3 &nbsp;&nbsp; shutdown!</i></h3></div><div><p>Stops the timer. New task threads will not be launched. Exisiting tasks threads will be killed immediately</p></div><div><div class="highlight"><pre><span class="p">(</span><span class="nf">shutdown!</span> <span class="nv">&lt;cnj&gt;</span><span class="p">)</span>
+</pre></div>
+</div><div><a name="restart!"></a><h3><i>5.2.4 &nbsp;&nbsp; restart!</i></h3></div><div><p>Restarts the timer, killing all exisiting threads.</p></div><div><div class="highlight"><pre><span class="p">(</span><span class="nf">restart!</span> <span class="nv">&lt;cnj&gt;</span><span class="p">)</span>
+</pre></div>
+</div><div><a name="stopped?"></a><h3><i>5.2.5 &nbsp;&nbsp; stopped?</i></h3></div><div><p>Checks whether the timer is stopped</p></div><div><div class="highlight"><pre><span class="p">(</span><span class="nf">stopped?</span> <span class="nv">&lt;cnj&gt;</span><span class="p">)</span>
+</pre></div>
+</div><div><a name="running?"></a><h3><i>5.2.6 &nbsp;&nbsp; running?</i></h3></div><div><p>Checks whether the timer is running. Complement of stopped?</p></div><div><div class="highlight"><pre><span class="p">(</span><span class="nf">running?</span> <span class="nv">&lt;cnj&gt;</span><span class="p">)</span>
+</pre></div>
+</div><div><a name="uptime"></a><h3><i>5.2.7 &nbsp;&nbsp; uptime</i></h3></div><div><p>Checks how long the timer has been running. Returns a long representing the time in msecs.</p></div><div><div class="highlight"><pre><span class="p">(</span><span class="nf">uptime</span> <span class="nv">&lt;cnj&gt;</span><span class="p">)</span>
+</pre></div>
+</div><div><a name="task-scheduling"></a><h3>5.3 &nbsp;&nbsp; task scheduling</h3></div><div><a name="enable-task"></a><h3><i>5.3.1 &nbsp;&nbsp; enable-task</i></h3></div><div><p>If a task has been disabled, meaning that the task will not run at its allocated time, <code>enable-task</code> will enable it.</p></div><div><div class="highlight"><pre><span class="p">(</span><span class="nf">enable-task</span> <span class="nv">&lt;cnj&gt;</span> <span class="nv">&lt;task-id</span><span class="p">)</span>
+</pre></div>
+</div><div><a name="disable-task"></a><h3><i>5.3.2 &nbsp;&nbsp; disable-task</i></h3></div><div><p>Disables a task so that it will not run</p></div><div><div class="highlight"><pre><span class="p">(</span><span class="nf">disable-task</span> <span class="nv">&lt;cnj&gt;</span> <span class="nv">&lt;task-id</span><span class="p">)</span>
+</pre></div>
+</div><div><a name="task-enabled?"></a><h3><i>5.3.3 &nbsp;&nbsp; task-enabled?</i></h3></div><div><p>Checks if a task has been enabled. Tasks are enabled by default</p></div><div><div class="highlight"><pre><span class="p">(</span><span class="nf">task-enabled?</span> <span class="nv">&lt;cnj&gt;</span> <span class="nv">&lt;task-id</span><span class="p">)</span>
+</pre></div>
+</div><div><a name="task-disabled?"></a><h3><i>5.3.4 &nbsp;&nbsp; task-disabled?</i></h3></div><div><p>Checks if a task has been disabled.</p></div><div><div class="highlight"><pre><span class="p">(</span><span class="nf">task-disabled?</span> <span class="nv">&lt;cnj&gt;</span> <span class="nv">&lt;task-id</span><span class="p">)</span>
+</pre></div>
+</div><div><a name="task-simulation"></a><h3>5.4 &nbsp;&nbsp; task simulation</h3></div><div><a name="simulate"></a><h3><i>5.4.1 &nbsp;&nbsp; simulate</i></h3></div><div><p>Simulates the timer over <code>start-time</code> and <code>end-time</code>. Additional parameters are <code>interval</code> and <code>pause</code>. More examples can be found in <a href='#running-simulations'>Running Simulations</a></p></div><div><div class="highlight"><pre><span class="p">(</span><span class="nf">simulate</span> <span class="nv">&lt;cnj&gt;</span> <span class="nv">&lt;start-time&gt;</span> <span class="nv">&lt;end-time&gt;</span><span class="p">)</span>
+
+<span class="p">(</span><span class="nf">simulate</span> <span class="nv">&lt;cnj&gt;</span> <span class="nv">&lt;start-time&gt;</span> <span class="nv">&lt;end-time&gt;</span> <span class="nv">&lt;interval&gt;</span> <span class="nv">&lt;pause&gt;</span><span class="p">)</span>
+</pre></div>
+</div><div><a name="simulate-st"></a><h3><i>5.4.2 &nbsp;&nbsp; simulate-st</i></h3></div><div><p>Simulate the timer over start-time and end-time. Just like <code>simulate</code> but all tasks are executed on a single thread (only should be used on non-blocking handlers)</p></div><div><div class="highlight"><pre><span class="p">(</span><span class="nf">simulate-st</span> <span class="nv">&lt;cnj&gt;</span> <span class="nv">&lt;start-time&gt;</span> <span class="nv">&lt;end-time&gt;</span><span class="p">)</span>
+
+<span class="p">(</span><span class="nf">simulate-st</span> <span class="nv">&lt;cnj&gt;</span> <span class="nv">&lt;start-time&gt;</span> <span class="nv">&lt;end-time&gt;</span> <span class="nv">&lt;interval&gt;</span> <span class="nv">&lt;pause&gt;</span><span class="p">)</span>
+</pre></div>
+</div><div><a name="thread-management"></a><h3>5.5 &nbsp;&nbsp; thread management</h3></div><div><a name="get-ids"></a><h3><i>5.5.1 &nbsp;&nbsp; get-ids</i></h3></div><div><p>Return a list of all task ids:</p></div><div><div class="highlight"><pre><span class="p">(</span><span class="nf">get-ids</span> <span class="nv">&lt;cnj&gt;</span><span class="p">)</span>
+</pre></div>
+</div><div><a name="get-task"></a><h3><i>5.5.2 &nbsp;&nbsp; get-task</i></h3></div><div><p>Return the task entry by id</p></div><div><div class="highlight"><pre><span class="p">(</span><span class="nf">get-task</span> <span class="nv">&lt;cnj&gt;</span> <span class="nv">&lt;task-id&gt;</span><span class="p">)</span>
+
+<span class="c1">;; Example Output:</span>
+<span class="p">(</span><span class="nf">get-task</span> <span class="nv">cnj</span> <span class="s">&quot;print-task&quot;</span><span class="p">)</span>
+<span class="nv">=&gt;</span> <span class="p">{</span><span class="ss">:task</span> <span class="p">{</span><span class="ss">:desc</span> <span class="s">&quot;&quot;</span>
+           <span class="ss">:running</span> <span class="s">&quot;&lt;Ova1228148821 []&gt;&quot;</span>
+           <span class="ss">:last-exec</span> <span class="s">&quot;#&lt;Ref@791c61fe: nil&gt;&quot;</span>
+           <span class="ss">:last-successful</span> <span class="s">&quot;#&lt;Ref@3665a8d0: nil&gt;&quot;</span>
+           <span class="ss">:handler</span> <span class="s">&quot;#&lt;cronj_api$fn__8574 midje_doc.cronj_api$fn__85744c2e0b96&gt;&quot;</span>
+           <span class="ss">:id</span> <span class="s">&quot;print-task&quot;</span><span class="p">}</span>
+    <span class="ss">:schedule</span> <span class="s">&quot;/2 * * * * * *&quot;</span>
+    <span class="ss">:tab-array</span> <span class="p">((</span><span class="s">&quot;&lt;tab$_STAR__$fn__2780 cronj.data.tab$_STAR__$fn__278062facbec&gt;&quot;</span><span class="p">)</span>
+                <span class="p">(</span><span class="ss">:*</span><span class="p">)</span> <span class="p">(</span><span class="ss">:*</span><span class="p">)</span> <span class="p">(</span><span class="ss">:*</span><span class="p">)</span> <span class="p">(</span><span class="ss">:*</span><span class="p">)</span> <span class="p">(</span><span class="ss">:*</span><span class="p">)</span> <span class="p">(</span><span class="ss">:*</span><span class="p">))</span>
+    <span class="ss">:enabled</span> <span class="nv">true</span>
+    <span class="ss">:opts</span> <span class="p">{</span><span class="ss">:output</span> <span class="s">&quot;Hello There&quot;</span><span class="p">}</span>
+    <span class="ss">:output</span> <span class="s">&quot;#&lt;Atom@3f6225b8: nil&gt;&quot;</span><span class="p">}</span>
+</pre></div>
+</div><div><a name="get-threads"></a><h3><i>5.5.3 &nbsp;&nbsp; get-threads</i></h3></div><div><p>Returns a list of running threads. See <a href='#task-management'>Task Management</a> for examples.</p></div><div><h4><i>e.5.1</i></h4><div class="highlight"><pre><span class="p">(</span><span class="nf">get-threads</span> <span class="nv">&lt;cnj&gt;</span><span class="p">)</span>  <span class="c1">;; Gets all running threads in &lt;cnj&gt;</span>
+
+<span class="p">(</span><span class="nf">get-threads</span> <span class="nv">&lt;cnj&gt;</span> <span class="nv">&lt;task-id&gt;</span><span class="p">)</span>  <span class="c1">;; Gets all threads for &lt;task-id&gt; in &lt;cnj&gt;</span>
+</pre></div>
+</div><div><a name="exec!"></a><h3><i>5.5.4 &nbsp;&nbsp; exec!</i></h3></div><div><p>Launches a thread for the task, irrespective of whether the task has not been scheduled or that it has been disabled.</p></div><div><h4><i>e.5.2</i></h4><div class="highlight"><pre><span class="p">(</span><span class="nf">exec!</span> <span class="nv">&lt;cnj&gt;</span> <span class="nv">&lt;task-id&gt;</span><span class="p">)</span>  <span class="c1">;; launches a new thread for &lt;task-id&gt; using</span>
+                         <span class="c1">;; the current time and default opts</span>
+
+<span class="p">(</span><span class="nf">exec!</span> <span class="nv">&lt;cnj&gt;</span> <span class="nv">&lt;task-id&gt;</span> <span class="nv">&lt;dt&gt;</span><span class="p">)</span>  <span class="c1">;; launches a new thread for &lt;task-id&gt; using</span>
+                              <span class="c1">;; the time as &lt;dt&gt; and default opts</span>
+
+<span class="p">(</span><span class="nf">exec!</span> <span class="nv">&lt;cnj&gt;</span> <span class="nv">&lt;task-id&gt;</span> <span class="nv">&lt;dt&gt;</span> <span class="nv">&lt;opts&gt;</span><span class="p">)</span> <span class="c1">;; launches a new thread for &lt;task-id&gt; using</span>
+                                    <span class="c1">;; the time as &lt;dt&gt; and opts as &lt;opts&gt;</span>
+</pre></div>
+</div><div><a name="kill!"></a><h3><i>5.5.5 &nbsp;&nbsp; kill!</i></h3></div><div><p>Kills running threads. See <a href='#task-management'>Task Management</a> for examples.</p></div><div><h4><i>e.5.3</i></h4><div class="highlight"><pre><span class="p">(</span><span class="nf">kill!</span> <span class="nv">&lt;cnj&gt;</span><span class="p">)</span>    <span class="c1">;; Kills all running threads</span>
+
+<span class="p">(</span><span class="nf">kill!</span> <span class="nv">&lt;cnj&gt;</span> <span class="nv">&lt;task-id&gt;</span><span class="p">)</span>  <span class="c1">;; Kills all running threads for &lt;task-id&gt;</span>
+
+<span class="p">(</span><span class="nf">kill!</span> <span class="nv">&lt;cnj&gt;</span> <span class="nv">&lt;task-id&gt;</span> <span class="nv">&lt;dt&gt;</span><span class="p">)</span> <span class="c1">;; Kills only thread started at &lt;dt&gt; for &lt;task-id&gt;</span>
+</pre></div>
+</div><div><a name="end-notes"></a><h2><b>6 &nbsp;&nbsp; End Notes</b></h2></div><div><p>For any feedback, requests and comments, please feel free to lodge an issue on github or contact me directly.</p><p>Chris.</p></div></section></body><script type="text/javascript">var metas = document.getElementsByTagName('meta');
+var i;
+if (navigator.userAgent.match(/iPhone/i)) {
+  for (i=0; i<metas.length; i++) {
+    if (metas[i].name == "viewport") {
+      metas[i].content = "width=device-width, minimum-scale=1.0, maximum-scale=1.0";
+    }
+  }
+  document.addEventListener("gesturestart", gestureStart, false);
+}
+function gestureStart() {
+  for (i=0; i<metas.length; i++) {
+    if (metas[i].name == "viewport") {
+      metas[i].content = "width=device-width, minimum-scale=0.25, maximum-scale=1.6";
+    }
+  }
+}</script></html>
