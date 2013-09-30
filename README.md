@@ -28,7 +28,7 @@ To generate this document for offline use:
   
       > lein midje-doc
 
-The output will be generated in <root>/index.html
+The output will be generated in `<root>/index.html`
 
 
 ## License
