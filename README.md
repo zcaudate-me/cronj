@@ -1,6 +1,6 @@
 # cronj
 
-A simple to use, `cron`-inspiried task scheduler
+A simple to use, cron-inspiried task scheduler
 
 ## Installation:
 
