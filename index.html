@@ -610,11 +610,11 @@ header div.heading {
     <span class="ss">:opts</span> <span class="p">{</span><span class="ss">:output</span> <span class="s">&quot;Hello There&quot;</span><span class="p">}</span>
     <span class="ss">:output</span> <span class="s">&quot;#&lt;Atom@3f6225b8: nil&gt;&quot;</span><span class="p">}</span>
 </pre></div>
-</div><div><a name="get-threads"></a><h3><i>5.5.3 &nbsp;&nbsp; get-threads</i></h3></div><div><p>Returns a list of running threads. See <a href='#task-management'>Task Management</a> for examples.</p></div><div><h4><i>e.5.1</i></h4><div class="highlight"><pre><span class="p">(</span><span class="nf">get-threads</span> <span class="nv">&lt;cnj&gt;</span><span class="p">)</span>  <span class="c1">;; Gets all running threads in &lt;cnj&gt;</span>
+</div><div><a name="get-threads"></a><h3><i>5.5.3 &nbsp;&nbsp; get-threads</i></h3></div><div><p>Returns a list of running threads. See <a href='#task-management'>Task Management</a> for examples.</p></div><div><div class="highlight"><pre><span class="p">(</span><span class="nf">get-threads</span> <span class="nv">&lt;cnj&gt;</span><span class="p">)</span>  <span class="c1">;; Gets all running threads in &lt;cnj&gt;</span>
 
 <span class="p">(</span><span class="nf">get-threads</span> <span class="nv">&lt;cnj&gt;</span> <span class="nv">&lt;task-id&gt;</span><span class="p">)</span>  <span class="c1">;; Gets all threads for &lt;task-id&gt; in &lt;cnj&gt;</span>
 </pre></div>
-</div><div><a name="exec!"></a><h3><i>5.5.4 &nbsp;&nbsp; exec!</i></h3></div><div><p>Launches a thread for the task, irrespective of whether the task has not been scheduled or that it has been disabled.</p></div><div><h4><i>e.5.2</i></h4><div class="highlight"><pre><span class="p">(</span><span class="nf">exec!</span> <span class="nv">&lt;cnj&gt;</span> <span class="nv">&lt;task-id&gt;</span><span class="p">)</span>  <span class="c1">;; launches a new thread for &lt;task-id&gt; using</span>
+</div><div><a name="exec!"></a><h3><i>5.5.4 &nbsp;&nbsp; exec!</i></h3></div><div><p>Launches a thread for the task, irrespective of whether the task has not been scheduled or that it has been disabled.</p></div><div><div class="highlight"><pre><span class="p">(</span><span class="nf">exec!</span> <span class="nv">&lt;cnj&gt;</span> <span class="nv">&lt;task-id&gt;</span><span class="p">)</span>  <span class="c1">;; launches a new thread for &lt;task-id&gt; using</span>
                          <span class="c1">;; the current time and default opts</span>
 
 <span class="p">(</span><span class="nf">exec!</span> <span class="nv">&lt;cnj&gt;</span> <span class="nv">&lt;task-id&gt;</span> <span class="nv">&lt;dt&gt;</span><span class="p">)</span>  <span class="c1">;; launches a new thread for &lt;task-id&gt; using</span>
@@ -623,7 +623,7 @@ header div.heading {
 <span class="p">(</span><span class="nf">exec!</span> <span class="nv">&lt;cnj&gt;</span> <span class="nv">&lt;task-id&gt;</span> <span class="nv">&lt;dt&gt;</span> <span class="nv">&lt;opts&gt;</span><span class="p">)</span> <span class="c1">;; launches a new thread for &lt;task-id&gt; using</span>
                                     <span class="c1">;; the time as &lt;dt&gt; and opts as &lt;opts&gt;</span>
 </pre></div>
-</div><div><a name="kill!"></a><h3><i>5.5.5 &nbsp;&nbsp; kill!</i></h3></div><div><p>Kills running threads. See <a href='#task-management'>Task Management</a> for examples.</p></div><div><h4><i>e.5.3</i></h4><div class="highlight"><pre><span class="p">(</span><span class="nf">kill!</span> <span class="nv">&lt;cnj&gt;</span><span class="p">)</span>    <span class="c1">;; Kills all running threads</span>
+</div><div><a name="kill!"></a><h3><i>5.5.5 &nbsp;&nbsp; kill!</i></h3></div><div><p>Kills running threads. See <a href='#task-management'>Task Management</a> for examples.</p></div><div><div class="highlight"><pre><span class="p">(</span><span class="nf">kill!</span> <span class="nv">&lt;cnj&gt;</span><span class="p">)</span>    <span class="c1">;; Kills all running threads</span>
 
 <span class="p">(</span><span class="nf">kill!</span> <span class="nv">&lt;cnj&gt;</span> <span class="nv">&lt;task-id&gt;</span><span class="p">)</span>  <span class="c1">;; Kills all running threads for &lt;task-id&gt;</span>
 
