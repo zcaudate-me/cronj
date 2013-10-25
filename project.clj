@@ -8,7 +8,7 @@
                  [im.chit/hara "1.0.1"]
                  [im.chit/ova "0.9.6"]]
   :profiles {:dev {:dependencies [[midje "1.5.0"]]}}
-  :documentation {:files {"index"
+  :documentation {:files {"doc/index"
                           {:input "test/midje_doc/cronj_guide.clj"
                            :title "cronj"
                            :sub-title "task scheduling and simulation"
