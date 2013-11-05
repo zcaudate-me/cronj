@@ -14,7 +14,7 @@ All functions are in the `cronj.core` namespace.
 
 See main site at:
 
-http://doc.caudate.me/cronj/
+http://docs.caudate.me/cronj/
 
 To generate this document for offline use: 
 
