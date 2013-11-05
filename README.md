@@ -22,13 +22,16 @@ To generate this document for offline use:
   
       > git clone https://github.com/zcaudate/cronj.git
   
-  2. Install [lein-midje-doc](http://z.caudate.me/lein-midje-doc). 
+  2. Install [lein-midje-doc](http://docs.caudate.me/lein-midje-doc). 
   
-  3. Run in project folder
+  3. Create `doc` folder
+      > mkdir doc
+
+  4. Run in project folder
   
       > lein midje-doc
 
-The output will be generated in `<root>/index.html`
+The output will be generated in `doc/index.html`
 
 
 ## License
