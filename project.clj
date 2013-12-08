@@ -9,7 +9,7 @@
                  [im.chit/ova "1.0.1"]]
   :profiles {:dev {:dependencies [[midje "1.6.0"]]
                    :plugins [[lein-midje "3.1.3"]]}}
-  :documentation {:files {"doc/index"
+  :documentation {:files {"docs/index"
                           {:input "test/midje_doc/cronj_guide.clj"
                            :title "cronj"
                            :sub-title "task scheduling and simulation"

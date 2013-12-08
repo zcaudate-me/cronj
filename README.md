@@ -2,6 +2,8 @@
 
 A simple to use, cron-inspiried task scheduler
 
+[![Build Status](https://travis-ci.org/zcaudate/cronj.png?branch=master)](https://travis-ci.org/zcaudate/cronj)
+
 ## Installation:
 
 In project.clj, add to dependencies:
@@ -24,14 +26,14 @@ To generate this document for offline use:
   
   2. Install [lein-midje-doc](http://docs.caudate.me/lein-midje-doc). 
   
-  3. Create `doc` folder
-      > mkdir doc
+  3. Create `docs` folder
+      > mkdir docs
 
   4. Run in project folder
   
       > lein midje-doc
 
-The output will be generated in `doc/index.html`
+The output will be generated in `docs/index.html`
 
 
 ## License
