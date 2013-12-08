@@ -32,10 +32,13 @@
 
   (cj/disable-task *cnj* :conj)
   (ts/signal-tick (:scheduler *cnj*) :conj *t1*)
+  (Thread/sleep 10)
   (count @*holder*) => 0
 
   (cj/enable-task *cnj* :conj)
   (ts/signal-tick (:scheduler *cnj*) :conj *t1*)
+  
+  (Thread/sleep 10)
   (count @*holder*) => 1
   (first @*holder*) => *t1*)
 
@@ -43,6 +46,8 @@
   (do "Simulate using single threaded execution"
       (reset! *holder* [])
       (time (sm/simulate-st *cnj* *t1* *t2* (t/seconds 1))))
+  
+  (Thread/sleep 10)
   (count @*holder*) => 61
   (first @*holder*) => *t1*
   (last @*holder*)  => *t2*)
@@ -52,6 +57,8 @@
       (reset! *holder* [])
       (cj/disable-task *cnj* :conj)
       (time (sm/simulate-st *cnj* *t1* *t2* (t/seconds 1))))
+  
+  (Thread/sleep 10)
   (count @*holder*) => 0
   (first @*holder*) => nil
   (last @*holder*)  => nil
@@ -64,6 +71,8 @@
       (reset! *holder* [])
       (cj/shutdown! *cnj*)
       (time (sm/simulate *cnj* *t1* *t2* (t/seconds 2))))
+  
+  (Thread/sleep 1000)
   (count @*holder*) => 31
   (first @*holder*) => *t1*
   (last @*holder*)  => *t2*)
@@ -73,6 +82,8 @@
       (reset! *holder* [])
       (cj/shutdown! *cnj*)
       (time (sm/simulate *cnj* *t1* *t2* (t/seconds 2) 1)))
+  
+  (Thread/sleep 10)
   (count @*holder*) => 31
   (first @*holder*) => *t1*
   (last @*holder*)  => *t2*)
