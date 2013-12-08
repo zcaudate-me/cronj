@@ -6,7 +6,7 @@ A simple to use, cron-inspiried task scheduler
 
 In project.clj, add to dependencies:
 
-     [im.chit/cronj "0.9.6"]
+     [im.chit/cronj "1.0.1"]
 
 All functions are in the `cronj.core` namespace.
 
