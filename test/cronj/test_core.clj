@@ -59,7 +59,7 @@
   => true)
 
 
-(facts "Enabling and disabling tasks"
+(facts "Starting, stopping and killing"
   (let [cnj (cj/cronj
              :interval 2
              :entries [{:id       :t1
