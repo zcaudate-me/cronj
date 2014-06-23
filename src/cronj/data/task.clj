@@ -9,6 +9,9 @@
 (defn- has-tid? [ova id]
   (v/has? ova [:tid id]))
 
+(defn task? [t]
+  (:running t))
+
 (defn task
   ([m] (into {:desc "" :running (v/ova) :last-exec (ref nil)
               :last-successful (ref nil)}
