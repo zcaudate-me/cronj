@@ -27,8 +27,10 @@
   @(:last-successful task))
 
 (defn running [task]
-  (->> (v/selectv (:running task))
-       (map #(select-keys % [:tid :opts]))))
+  (if (nil? task)
+    nil
+    (->> (v/selectv (:running task))
+         (map #(select-keys % [:tid :opts])))))
 
 
 (defn- register-thread [task tid threadp opts]

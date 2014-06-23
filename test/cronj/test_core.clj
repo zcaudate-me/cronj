@@ -58,6 +58,34 @@
       (cj/task-enabled? cnj :t1))
   => true)
 
+(facts "Scheduling and unscheduling new tasks"
+  (let [cnj (cj/cronj)]
+
+    (do "start up"
+        (cj/start! cnj))
+
+    (cj/get-threads cnj :t-temp) => nil?
+    (cj/running? cnj) => true
+
+    (do "add a task"
+        (cj/schedule-task cnj (tk/task
+                                {:id :t-temp
+                                 :handler (fn [dt opts] (Thread/sleep 2000))})
+                          "* * * * * * *"))
+    (Thread/sleep 1000)
+    (cj/get-threads cnj :t-temp) => (has-length #{1})
+    (cj/get-ids cnj) => [:t-temp]
+    (cj/task-enabled? cnj :t-temp) => true
+    (cj/running? cnj) => true
+
+    (do "remove a task"
+        (cj/unschedule-task cnj :t-temp))
+    (cj/get-ids cnj) => []
+    (cj/running? cnj) => true
+
+    (do "clean up"
+        (cj/shutdown! cnj))))
+
 
 (facts "Starting, stopping and killing"
   (let [cnj (cj/cronj
