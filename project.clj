@@ -1,4 +1,4 @@
-(defproject im.chit/cronj "1.2.1"
+(defproject im.chit/cronj "1.4.0"
   :description "A simple to use, cron-inspiried task scheduler"
   :url "http://github.com/zcaudate/cronj"
   :license {:name "The MIT License"

@@ -4,9 +4,9 @@
 
 [[:chapter {:title "Installation"}]]
 
-"Add to `project.clj` dependencies (use double quotes): 
+"Add to `project.clj` dependencies: 
 
-    [im.chit/cronj '{{PROJECT.version}}']"
+`[im.chit/cronj `\"`{{PROJECT.version}}`\"`]`"
 
 "All functions are in the `cronj.core` namespace."
 
