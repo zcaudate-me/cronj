@@ -6,6 +6,7 @@
   :dependencies [[org.clojure/clojure "1.6.0"]
                  [clj-time "0.8.0"]
                  [im.chit/hara.common.primitives "2.1.2"]
+                 [im.chit/hara.namespace.import "2.1.2"]
                  [im.chit/hara.ova "2.1.2"]
                  [im.chit/hara.concurrent.latch "2.1.2"]]
   :profiles {:dev {:dependencies [[midje "1.6.3"]]
