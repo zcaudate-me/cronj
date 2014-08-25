@@ -1,12 +1,12 @@
 (ns cronj.data.scheduler
-  (:require [hara.state :refer [latch]]
+  (:require [hara.concurrent.latch :refer [latch]]
             [hara.common.error :refer [suppress]]
-            [hara.common.fn :refer [F]]
-            [ova.core :as v]
+            [hara.common.primitives :refer [F]]
+            [hara.ova :as ova]
             [cronj.data.tab :as tab]
             [cronj.data.task :as tk]))
 
-(defn scheduler [] (v/ova))
+(defn scheduler [] (ova/ova))
 
 (defn set-tab-array-fn [schedule]
   (suppress (tab/parse-tab schedule) tab/nil-array))
@@ -26,13 +26,13 @@
 
 (defn unschedule-task [tsc task-id]
   (dosync
-   (doseq [entry (v/select tsc [[:task :id] task-id])]
+   (doseq [entry (ova/select tsc [[:task :id] task-id])]
     (tk/kill-all! (:task entry)))
-   (v/remove! tsc [[:task :id] task-id])))
+   (ova/remove! tsc [[:task :id] task-id])))
 
 (defn reschedule-task [tsc task-id schedule]
   (dosync
-   (v/!> tsc [[:task :id task-id]]
+   (ova/!> tsc [[:task :id task-id]]
          (merge
           {:schedule  schedule
            :tab-array (set-tab-array-fn schedule)}))))
@@ -41,22 +41,22 @@
   ([tsc tsce]
      (dosync
       (unschedule-task tsc (:id (:task tsce)))
-      (v/insert! tsc tsce)))
+      (ova/insert! tsc tsce)))
   ([tsc task schedule & [enabled? opts]]
      (schedule-task tsc (task-entry task schedule enabled? opts))))
 
 (defn enable-task [tsc task-id]
   (dosync
-   (v/!> tsc [[:task :id] task-id]
+   (ova/!> tsc [[:task :id] task-id]
          (merge {:enabled true}))))
 
 (defn disable-task [tsc task-id]
   (dosync
-   (v/!> tsc [[:task :id] task-id]
+   (ova/!> tsc [[:task :id] task-id]
            (merge{:enabled false}))))
 
 (defn task-enabled? [tsc task-id]
-  (:enabled (first (v/select tsc [[:task :id] task-id]))))
+  (:enabled (first (ova/select tsc [[:task :id] task-id]))))
 
 (defn task-disabled? [tsc task-id]
   (not (task-enabled? tsc task-id)))
@@ -70,8 +70,8 @@
 
 (defn- select-tasks [tsc task-id]
   (if task-id
-    (v/select tsc [[:task :id] task-id :enabled true])
-    (v/select tsc [:enabled true])))
+    (ova/select tsc [[:task :id] task-id :enabled true])
+    (ova/select tsc [:enabled true])))
 
 (defn signal-tick
   ([tsc dt] (signal-tick tsc nil dt))
@@ -87,14 +87,14 @@
        (set-exec-output dt entry))))
 
 (defn get-task [tsc task-id]
-  (first (v/select tsc [[:task :id] task-id])))
+  (first (ova/select tsc [[:task :id] task-id])))
 
 (defn task-ids [tsc]
-  (map #(:id (:task %)) (v/selectv tsc)))
+  (map #(:id (:task %)) (ova/selectv tsc)))
 
 (defn task-threads [tsc]
   (map (fn [e]
          (if-let [task (:task e)]
            {:id (:id task)
             :running (tk/running task)}))
-       (v/selectv tsc)))
+       (ova/selectv tsc)))

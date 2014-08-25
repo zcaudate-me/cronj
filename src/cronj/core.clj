@@ -1,13 +1,13 @@
 (ns cronj.core
-  (:require [ova.core :as v]
-            [hara.state :refer [add-change-watch]]
-            [hara.import :as im]
+  (:require [hara.ova :as ova]
+            [hara.common.watch :as watch]
+            [hara.namespace.import :as ns]
             [cronj.data.task :as tk]
             [cronj.data.timer :as tm]
             [cronj.data.scheduler :as ts]))
 
-(im/import cronj.simulation [simulate simulate-st local-time])
-(im/import clj-time.local [local-now])
+(ns/import cronj.simulation [simulate simulate-st local-time])
+(ns/import clj-time.local [local-now])
 
 (declare install-watch cronj)
 
@@ -24,12 +24,12 @@
     {:timer timer :scheduler scheduler}))
 
 (defn- install-watch [timer tsc]
-  (add-change-watch
-   timer :time-watch :last-check
-   (fn [_ rf _ _]
-     (let [r @rf]
-       (ts/signal-tick tsc (:last-check-time r))))))
-
+  (watch/add timer :time-watch
+             (fn [_ rf _ _]
+               (let [r @rf]
+                 (ts/signal-tick tsc (:last-check-time r))))
+             {:diff true
+              :select :last-check}))
 
 ;;--------- timer functions --------------
 

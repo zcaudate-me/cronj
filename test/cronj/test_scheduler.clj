@@ -1,7 +1,8 @@
 (ns cronj.test-scheduler
   (:use midje.sweet
-        hara.checkers)
-    (:require [ova.core :as v]
+        ;;hara.checkers
+        )
+    (:require [hara.ova :as ova]
               [clj-time.local :as lt]
               [clj-time.core :as t]
               [cronj.data.task :as tk]
@@ -48,7 +49,7 @@
         _   (ts/schedule-task tscb tk2 "2-60/2 * * * * * *")]
 
     (fact "initialization"
-      out => (is-atom nil)
+      @out => nil
       (count tscb) => 2
       (ts/task-enabled? tscb :1) => true
       (ts/task-enabled? tscb :2) => true)
@@ -56,17 +57,17 @@
     (ts/signal-tick tscb dt1)
     (let [[reg1 job1] (-> (tscb [:task :id] :1) :output deref :exec)]
       @job1 "out should be :1"
-      out => (is-atom :1))
+      @out => :1)
     (ts/signal-tick tscb dt2)
     (let [[reg2 job2] (-> (tscb [:task :id] :2) :output deref :exec)]
       @job2 "out should be :2"
-      out => (is-atom :2))
+      @out => :2)
 
     (ts/disable-task tscb :1)
     (ts/signal-tick tscb dt1)
     (let [[reg1 job1] (-> (tscb [:task :id] :1) :output deref :exec)]
       @job1 "out should be :2 as tk1 is disabled"
-      out => (is-atom :2)
+      @out => :2
       (ts/task-enabled? tscb :1) => false
       (ts/task-enabled? tscb :2) => true)
 
@@ -74,7 +75,7 @@
     (ts/signal-tick tscb dt1)
     (let [[reg1 job1] (-> (tscb [:task :id] :1) :output deref :exec)]
       @job1 "out should be :1 as tk1 is enabled"
-      out => (is-atom :1)
+      @out => :1
       (ts/task-enabled? tscb :1) => true
       (ts/task-enabled? tscb :2) => true)
 ))

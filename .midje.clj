@@ -1,2 +1,3 @@
-(change-defaults :emitter 'midje.emission.plugins.progress
-                 :print-level :print-facts)
+#_(change-defaults :emitter 'midje.emission.plugins.progress
+                 :print-level :print-facts
+               )

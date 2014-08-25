@@ -1,6 +1,7 @@
 (ns cronj.test-core
   (:use midje.sweet
-        hara.checkers)
+        ;;hara.checkers
+        )
   (:require [cronj.core :as cj]
             [cronj.data.scheduler :as ts]
             [cronj.data.task :as tk]

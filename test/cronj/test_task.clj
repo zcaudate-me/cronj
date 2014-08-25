@@ -1,6 +1,6 @@
 (ns cronj.test-task
     (:use midje.sweet)
-    (:require [ova.core :as v]
+    (:require [hara.ova :as ova]
               [clj-time.local :as lt]
               [cronj.data.task :as t] :reload))
 

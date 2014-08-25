@@ -1,5 +1,5 @@
 (ns cronj.simulation
-  (:require [ova.core :as v]
+  (:require [hara.ova :as ova]
             [clj-time.core :as t]
             [clj-time.local :as lt]
             [cronj.data.tab :as tab]
@@ -45,7 +45,7 @@
 (defn- simulate-st-loop [cnj start end interval pause]
   (if-not (t/before? end start)
     (let [dt-array (tab/to-dt-array start)]
-      (doseq [entry (v/select (:scheduler cnj) [:enabled true])]
+      (doseq [entry (ova/select (:scheduler cnj) [:enabled true])]
         (if (tab/match-array? dt-array (:tab-array entry))
           (exec-st entry start)))
       (if pause (Thread/sleep pause))

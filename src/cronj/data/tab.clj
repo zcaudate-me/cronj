@@ -1,7 +1,7 @@
 (ns cronj.data.tab
   (:require [clojure.string :refer [split]]
             [hara.common.error :refer [error suppress]]
-            [hara.common.fn :refer [F]]
+            [hara.common.primitives :refer [F]]
             [clj-time.core :as t]
             [clj-time.local :as lt]))
 
