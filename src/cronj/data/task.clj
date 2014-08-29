@@ -2,7 +2,7 @@
   (:require [hara.ova :as ova]
             [hara.common.error :refer [error suppress]]
             [hara.common.checks :refer [hash-map?]]
-            [clojure.tools.logging :as info]))
+            [clojure.tools.logging :as log]))
 
 (def REQUIRED-TASK-KEYS [:id :handler])
 (def ALL-TASK-KEYS [:id :desc :handler :running :last-exec :last-successful :pre-hook :post-hook])
