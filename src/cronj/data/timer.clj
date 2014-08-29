@@ -1,7 +1,8 @@
 (ns cronj.data.timer
   (:require [clj-time.core :as t]
             [clj-time.local :as lt]
-            [cronj.data.tab :as tab]))
+            [cronj.data.tab :as tab]
+            [clojure.tools.logging :as log]))
 
 (def DEFAULT-INTERVAL 1)
 
@@ -60,7 +61,7 @@
              :interval interval
              :thread (future (timer-fn timer recur?)))
       :else
-      (println "The timer is already running."))))
+      (log/info "The timer is already running."))))
 
 (defn trigger!
   [timer] (start! timer DEFAULT-INTERVAL false))
@@ -71,7 +72,7 @@
                    (-> (update-in m [:thread] future-cancel)
                        (assoc :thread nil
                               :start-time nil))))
-    (println "The timer is already stopped.")))
+    (log/info "The timer is already stopped.")))
 
 (defn restart!
   ([timer] (restart! timer DEFAULT-INTERVAL))

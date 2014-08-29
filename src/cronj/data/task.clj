@@ -1,7 +1,8 @@
 (ns cronj.data.task
   (:require [hara.ova :as ova]
             [hara.common.error :refer [error suppress]]
-            [hara.common.checks :refer [hash-map?]]))
+            [hara.common.checks :refer [hash-map?]]
+            [clojure.tools.logging :as info]))
 
 (def REQUIRED-TASK-KEYS [:id :handler])
 (def ALL-TASK-KEYS [:id :desc :handler :running :last-exec :last-successful :pre-hook :post-hook])
@@ -56,7 +57,7 @@
            result (handler tid opts)]
        (exec-hook post tid (assoc opts :result result))
        (deregister-thread task tid true))
-     (println "Task registration failed for " tid))))
+     (log/info "Task registration failed for " tid))))
 
 (defn exec-main [task tid opts]
   (let [pre       (:pre-hook task)
@@ -70,7 +71,7 @@
 
 (defn exec! [task tid & [opts]]
   (cond (has-tid? (:running task) tid)
-        (println "There is already a thread with tid: " tid "running.")
+        (log/info "There is already a thread with tid: " tid "running.")
 
         (not (or (nil? opts) (hash-map? opts)))
         (error "The opts argument has to be a hashmap, not " opts)
@@ -83,7 +84,7 @@
     (if-let [thrd (first thrds)]
       (do (future-cancel (:thread thrd))
           (deregister-thread task tid false))
-      (println "Thread" tid "not running"))))
+      (log/info "Thread" tid "not running"))))
 
 (defn kill-all! [task]
   (dosync
