@@ -4,6 +4,7 @@
   :license {:name "The MIT License"
             :url "http://http://opensource.org/licenses/MIT"}
   :dependencies [[org.clojure/clojure "1.6.0"]
+                 [org.clojure/tools.logging "0.3.0"]
                  [clj-time "0.8.0"]
                  [im.chit/hara.common.primitives "2.1.2"]
                  [im.chit/hara.namespace.import "2.1.2"]
