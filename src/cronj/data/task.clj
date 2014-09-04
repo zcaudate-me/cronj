@@ -32,7 +32,7 @@
 
 (defn running [task]
   (if task
-    (->> (v/selectv (:running task))
+    (->> (ova/selectv (:running task))
          (map #(select-keys % [:tid :opts])))))
 
 (defn- register-thread [task tid threadp opts]
