@@ -10,6 +10,9 @@
 (defn- has-tid? [ova id]
   (ova/has? ova [:tid id]))
 
+(defn task? [t]
+  (:running t))
+
 (defn task
   ([m] (into {:desc "" :running (ova/ova) :last-exec (ref nil)
               :last-successful (ref nil)}
@@ -28,9 +31,9 @@
   @(:last-successful task))
 
 (defn running [task]
-  (->> (ova/selectv (:running task))
-       (map #(select-keys % [:tid :opts]))))
-
+  (if task
+    (->> (v/selectv (:running task))
+         (map #(select-keys % [:tid :opts])))))
 
 (defn- register-thread [task tid threadp opts]
   (when (not (has-tid? (:running task) tid))
