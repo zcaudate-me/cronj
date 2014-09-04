@@ -8,7 +8,7 @@ A simple to use, cron-inspired task scheduler. Please see [Immutability, time an
 
 In project.clj, add to dependencies:
 
-      [im.chit/cronj "1.4.0"]
+      [im.chit/cronj "1.4.1"]
 
 ### Documentation
 
@@ -16,6 +16,10 @@ See main site at:
 
 http://docs.caudate.me/cronj/
 
+### Contributors
+
+ - [Pierre-Yves Ritschard](https://github.com/pyr)
+ - [Chris Zheng](https://github.com/zcaudate)
 
 ## License
 Copyright © 2013 Chris Zheng
