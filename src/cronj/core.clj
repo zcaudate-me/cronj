@@ -45,7 +45,10 @@
 
 ;;--------- scheduler functions -----------
 
-(defn schedule-task [cnj task schedule & [enabled? opts]]
+(defn schedule-task
+  "Task must be created using the cronj.data.task/task constructor."
+  [cnj task schedule & [enabled? opts]]
+  {:pre [(tk/task? task)]}
   (ts/schedule-task (:scheduler cnj) task schedule enabled? opts))
 
 (defn unschedule-task [cnj task-id]
