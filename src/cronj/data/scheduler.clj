@@ -32,7 +32,7 @@
 
 (defn reschedule-task [tsc task-id schedule]
   (dosync
-   (ova/!> tsc [[:task :id task-id]]
+   (ova/!> tsc [[:task :id] task-id]
          (merge
           {:schedule  schedule
            :tab-array (set-tab-array-fn schedule)}))))

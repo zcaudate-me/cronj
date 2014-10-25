@@ -32,6 +32,11 @@
       (ts/schedule-task tscb tk2 "* * * * * * *")
       (fact "should still have 2 tasks" (count tscb) => 2)
 
+      (ts/reschedule-task tscb :1 "0 * * * * * *")
+      (fact "only tk1 should be rescheduled"
+        (:schedule (ts/get-task tscb :1)) => "0 * * * * * *"
+        (:schedule (ts/get-task tscb :2)) => "* * * * * * *")
+
       (ts/unschedule-task tscb :2)
       (fact "should still have 1 task" (count tscb) => 1)
 
