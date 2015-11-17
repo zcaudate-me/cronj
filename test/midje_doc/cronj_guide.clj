@@ -4,7 +4,7 @@
 
 [[:chapter {:title "Installation"}]]
 
-"Add to `project.clj` dependencies: 
+"Add to `project.clj` dependencies:
 
 `[im.chit/cronj `\"`{{PROJECT.version}}`\"`]`"
 
@@ -99,6 +99,7 @@ All these tasks will end at different times. To retrospectively reasoning about 
 **`opts`** is a hashmap, for example `{:path '/app/videos'}`. It has been found that user customisations such as server addresses and filenames, along with job schedules are usually specified at the top-most tier of the application whilst handler logic is usually in the middle-tier. Having an extra `opts` argument allow for better seperation of concerns and more readable code.
 
 "
+
 [[:section {:title "Thread Management"}]]
 "
 In reviewing other scheduling libraries, it was found that fully-featured thread management capabilities were lacking. `cronj` was designed with these features in mind:
@@ -124,8 +125,6 @@ Because the `timer` and the `scheduler` modules have been completely decoupled, 
 - Generating test inputs for other applications.
 - Both single and multi-threaded execution strategies are supported.
 "
-
-
 
 [[:chapter {:title "Walkthrough"}]]
 

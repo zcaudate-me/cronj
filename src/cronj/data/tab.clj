@@ -36,7 +36,7 @@
                         (zero? (mod (- v a) s))))))
 
 ;; String to Array Methods
-(defn- parse-tab-elem [es]
+(defn- parse-tab-elem [^String es]
   (cond (= es "*") :*
         (re-find #"^\d+$" es) (to-int es)
         (re-find #"^/\d+$" es) (*- (to-int (.substring es 1)))

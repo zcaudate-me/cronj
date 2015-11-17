@@ -1,4 +1,4 @@
-(defproject im.chit/cronj "1.4.3"
+(defproject im.chit/cronj "1.4.4"
   :description "A simple to use, cron-inspiried task scheduler"
   :url "http://github.com/zcaudate/cronj"
   :license {:name "The MIT License"
@@ -6,10 +6,10 @@
   :dependencies [[org.clojure/clojure "1.6.0"]
                  [org.clojure/tools.logging "0.3.0"]
                  [clj-time "0.8.0"]
-                 [im.chit/hara.common.primitives "2.1.5"]
-                 [im.chit/hara.namespace.import "2.1.5"]
-                 [im.chit/hara.ova "2.1.5"]
-                 [im.chit/hara.concurrent.latch "2.1.5"]]
+                 [im.chit/hara.common.primitives "2.1.12"]
+                 [im.chit/hara.namespace.import "2.1.12"]
+                 [im.chit/hara.ova "2.1.12"]
+                 [im.chit/hara.concurrent.latch "2.1.12"]]
   :profiles {:dev {:dependencies [[midje "1.6.3"]]
                    :plugins [[lein-midje "3.1.3"]
                              [lein-midje-doc "0.0.24"]]}}
