@@ -1,4 +1,4 @@
 [submodule "docs"]
 	path = docs
-	url = https://github.com/zcaudate/cronj.git
+	url = git@github.com:zcaudate/cronj.git
 	branch = gh-pages

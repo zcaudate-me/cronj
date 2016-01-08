@@ -8,7 +8,7 @@ A simple to use, cron-inspired task scheduler. Please see [Immutability, time an
 
 In project.clj, add to dependencies:
 
-      [im.chit/cronj "1.4.3"]
+      [im.chit/cronj "1.4.4"]
 
 ### Documentation
 
