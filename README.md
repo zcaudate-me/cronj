@@ -4,6 +4,14 @@ A simple to use, cron-inspired task scheduler. Please see [Immutability, time an
 
 [![Build Status](https://travis-ci.org/zcaudate/cronj.png?branch=master)](https://travis-ci.org/zcaudate/cronj)
 
+## Deprecation Notice
+
+This library has been integrated into the larger [hara](http://docs.caudate.me/hara) ecosystem. 
+
+it has been renamed to `hara.io.scheduler`:
+ - [scheduler docs](http://docs.caudate.me/hara/hara-io-scheduler.html)
+ - see [guide](http://docs.caudate.me/hara/hara-io-scheduler.html#cronj) for how to upgrade
+
 ## Installation:
 
 In project.clj, add to dependencies:
